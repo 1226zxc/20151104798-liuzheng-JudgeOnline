@@ -11,7 +11,7 @@
 		http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd">
 
 	<!-- 组件扫描 只扫描action -->
-	<context:component-scan base-package="cn.superman.web.controller" />
+	<context:component-scan base-package="com.lz.web.controller" />
 
 	<!-- 使用<mvc:annotation-driven />替换上边定义的处理器映射器和适配器 -->
 	<mvc:annotation-driven />

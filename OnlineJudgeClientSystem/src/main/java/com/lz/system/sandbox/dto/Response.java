@@ -1,9 +1,29 @@
 package com.lz.system.sandbox.dto;
 
+/**
+ * 存储测评机响应给前台的信息
+ *
+ * @author 刘铮
+ */
 public class Response {
+	/**
+	 * 本次请求指令
+	 */
 	private String requestCommand;
+
+	/**
+	 * 响应指令
+	 */
 	private String responseCommand;
+
+	/**
+	 * 响应数据
+	 */
 	private String data;
+
+	/**
+	 *
+	 */
 	private String signalId;
 
 	public String getResponseCommand() {

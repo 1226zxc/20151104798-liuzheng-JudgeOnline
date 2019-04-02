@@ -12,7 +12,7 @@
 		http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
 		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
 
-	<context:component-scan base-package="cn.superman.web.service"></context:component-scan>
+	<context:component-scan base-package="com.lz.web.service"/>
 	<!-- 开启这个配置，spring才能识别@Scheduled注解 -->
 	<task:annotation-driven />
 </beans>

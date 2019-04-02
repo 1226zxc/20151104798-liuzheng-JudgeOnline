@@ -97,7 +97,7 @@ public class JudgeCompetitionJob implements Runnable, Serializable {
 		JudgeProblemDTO judgeProblemDTO = null;
 		Problem problem = null;
 		// 文件夹的数量，代表该用户一共做了多少道题目
-		JobJudgeResultListener listener = new JobJudgeResultListener(
+		JobEvaluationResultHandler listener = new JobEvaluationResultHandler(
 				allCodeDirs.length);
 
 		for (File codeDir : allCodeDirs) {
@@ -125,7 +125,7 @@ public class JudgeCompetitionJob implements Runnable, Serializable {
 						.getOutputFileRootPath()));
 				judgeProblemDTO.setRunId(problemId + PROBLEM_ID_GAP
 						+ UUIDUtil.getUUID());
-				judgeProblemDTO.setJudgeResultListener(listener);
+				judgeProblemDTO.setEvaluationResultHandler(listener);
 
 				JavaSandboxService.getInstance().commitJudgementRequest(judgeProblemDTO,
 						null);
@@ -146,15 +146,15 @@ public class JudgeCompetitionJob implements Runnable, Serializable {
 		return inputPaths;
 	}
 
-	private class JobJudgeResultListener implements
-			JavaSandboxService.JudgeResultListener {
+	private class JobEvaluationResultHandler implements
+			JavaSandboxService.EvaluationResultHandler {
 		// 表示一共要等待多少道题目的判题结果出来了，才能组织完这个人一共的做题信息
 		private int waitCodeResultCount = 0;
 		private int sloveCodeResultCount = 0;
 		// 所有题目（包括每一道题目里的每一道小题）的成绩
 		private List<List<Sorce>> allSorces = null;
 
-		public JobJudgeResultListener(int waitCodeResultCount) {
+		public JobEvaluationResultHandler(int waitCodeResultCount) {
 			this.waitCodeResultCount = waitCodeResultCount;
 			allSorces = Collections
 					.synchronizedList(new ArrayList<List<Sorce>>(
@@ -162,7 +162,7 @@ public class JudgeCompetitionJob implements Runnable, Serializable {
 		}
 
 		@Override
-		public void judgeResult(ProblemJudgeResult problemJudgeResult) {
+		public void handleResult(ProblemJudgeResult problemJudgeResult) {
 			// 从item的runId中取出problemId
 			String problemId = null;
 			String runId = problemJudgeResult.getRunId();

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import com.lz.system.commandExecutor.ResponseExecutor;
-import com.lz.system.communicator.listener.JudgementMachineHandler;
+import com.lz.system.communicator.listener.EvaluationMachineHandler;
 import com.lz.system.communicator.messageProcessor.MessageProcessor;
 import com.lz.system.sandbox.dto.Request;
 import com.lz.util.Log4JUtil;
@@ -23,12 +23,17 @@ public class Communicator {
 	private Process process;
 	private String ip;
 	private int port;
+
+	/**
+	 * 每一个负责与测评机收发信息的Communicator实例实质都是
+	 * 下面的实例在干活
+	 */
 	private MessageProcessor messageProcessor;
 
 	/**
 	 * 与此连接的测评机机是否正在判题
 	 */
-	private boolean isJudgeing;
+	private boolean isJudging;
 	private boolean isWantStop;
 	private boolean isStop;
 	private boolean isWantClose;
@@ -48,7 +53,7 @@ public class Communicator {
 	 *
 	 * @return
 	 */
-	public boolean connectToSandbox() {
+	public boolean connectToMachine() {
 		if (socket == null) {
 			try {
 				socket = new Socket(ip,port);
@@ -63,7 +68,7 @@ public class Communicator {
 		return true;
 	}
 
-	public void closeWithSandboxConnect() {
+	public void closeWithMachineConnect() {
 		if (socket != null) {
 			try {
 				messageProcessor.close();
@@ -85,8 +90,8 @@ public class Communicator {
 	 * @param request 请求数据
 	 * @param executor
 	 */
-	public void sendRequset(Request request, ResponseExecutor executor) {
-		messageProcessor.sendRequset(request, executor);
+	public void sendRequest(Request request, ResponseExecutor executor) {
+		messageProcessor.transmitRequest(request, executor);
 	}
 
 	public String getIp() {
@@ -121,9 +126,9 @@ public class Communicator {
 		this.isStop = isStop;
 	}
 
-	public void addSandboxIdleListener(JudgementMachineHandler idleListener) {
+	public void setEvaluationMachineHandler(EvaluationMachineHandler idleListener) {
 		if (messageProcessor != null) {
-			messageProcessor.setIdleListener(idleListener);
+			messageProcessor.setMachineHandler(idleListener);
 		}
 	}
 
@@ -135,12 +140,12 @@ public class Communicator {
 		this.isWantClose = isWantClose;
 	}
 
-	public boolean isJudgeing() {
-		return isJudgeing;
+	public boolean isJudging() {
+		return isJudging;
 	}
 
-	public void setJudgeing(boolean isJudgeing) {
-		this.isJudgeing = isJudgeing;
+	public void setJudging(boolean isJudgeing) {
+		this.isJudging = isJudgeing;
 	}
 
 	public Process getProcess() {

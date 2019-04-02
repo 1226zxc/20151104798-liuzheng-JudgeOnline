@@ -180,7 +180,7 @@ public class SandboxStatus {
 	public String toString() {
 		return "SandboxStatus [idCard=" + idCard + ", ip=" + ip + ", port="
 				+ port + ", pid=" + pid + ", beginTime=" + beginTime
-				+ ", useMemory=" + useMemory + ", isJudgeing=" + isJudgeing
+				+ ", useMemory=" + useMemory + ", isJudging=" + isJudgeing
 				+ ", isRunning=" + isRunning + ", isWantStop=" + isWantStop
 				+ ", isWantClose=" + isWantClose + "]";
 	}

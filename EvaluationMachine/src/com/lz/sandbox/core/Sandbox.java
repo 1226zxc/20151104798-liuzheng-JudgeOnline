@@ -93,7 +93,7 @@ public class Sandbox {
 					thread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 						@Override
 						public void uncaughtException(Thread t, Throwable e) {
-							writeResponse(null, CommunicationSignal.ResponseSignal.ERROR,
+							response(null, CommunicationSignal.ResponseSignal.ERROR,
 									null, e.getMessage());
 						}
 					});
@@ -114,7 +114,7 @@ public class Sandbox {
 					thread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 						@Override
 						public void uncaughtException(Thread t, Throwable e) {
-							writeResponse(null,
+							response(null,
 									CommunicationSignal.ResponseSignal.ERROR,
 									null, e.getMessage());
 						}
@@ -226,7 +226,7 @@ public class Sandbox {
 			}
 			scanner.close();
 		} catch (Exception e) {
-			writeResponse(null, CommunicationSignal.ResponseSignal.ERROR, null,
+			response(null, CommunicationSignal.ResponseSignal.ERROR, null,
 					e.getMessage());
 		}
 	}
@@ -250,7 +250,7 @@ public class Sandbox {
 				System.gc();
 			}
 			Future<List<ProblemResultItem>> processProblem = processProblem(request.getData());
-			returnJudgedProblemResult(request.getSignalId(), processProblem);
+			responseEvaluationResult(request.getSignalId(), processProblem);
 			loadedClassCount++;
 		} else if (CommunicationSignal.RequestSignal.IS_BUSY.equals(request.getCommand())) {
 			checkBusy(request.getSignalId());
@@ -262,7 +262,7 @@ public class Sandbox {
 	 * @param signalId 关闭信号
 	 */
 	private void closeSandboxService(String signalId) {
-		writeResponse(signalId, CommunicationSignal.ResponseSignal.OK,
+		response(signalId, CommunicationSignal.ResponseSignal.OK,
 				CommunicationSignal.RequestSignal.CLOSE_SANDBOX, null);
 		try {
 			communicateSocket.close();
@@ -289,7 +289,7 @@ public class Sandbox {
 		long maxMemory = systemMemoryBean.getHeapMemoryUsage().getMax()
 				+ systemMemoryBean.getNonHeapMemoryUsage().getMax();
 		sandBoxStatus.setMaxMemory(maxMemory);
-		writeResponse(signalId, CommunicationSignal.ResponseSignal.OK,
+		response(signalId, CommunicationSignal.ResponseSignal.OK,
 				CommunicationSignal.RequestSignal.SANDBOX_STATUS,
 				gson.toJson(sandBoxStatus));
 
@@ -316,10 +316,10 @@ public class Sandbox {
 			mainClass = null;
 			return submit;
 		} catch (ClassNotFoundException e) {
-			writeResponse(null, CommunicationSignal.ResponseSignal.ERROR, null,
+			response(null, CommunicationSignal.ResponseSignal.ERROR, null,
 					e.getMessage());
 		} catch (Exception e) {
-			writeResponse(null, CommunicationSignal.ResponseSignal.ERROR, null,
+			response(null, CommunicationSignal.ResponseSignal.ERROR, null,
 					e.getMessage());
 		}
 		return null;
@@ -338,7 +338,7 @@ public class Sandbox {
 			responseCommand = CommunicationSignal.ResponseSignal.NO;
 		}
 
-		writeResponse(signalId, responseCommand,
+		response(signalId, responseCommand,
 				CommunicationSignal.RequestSignal.IS_BUSY, null);
 	}
 
@@ -347,7 +347,7 @@ public class Sandbox {
 	 * @param signalId 信号
 	 * @param processProblem 题目运行结果
 	 */
-	private void returnJudgedProblemResult(final String signalId, final Future<List<ProblemResultItem>> processProblem) {
+	private void responseEvaluationResult(final String signalId, final Future<List<ProblemResultItem>> processProblem) {
 		problemResultThreadPool.execute(new Runnable() {
 			@Override
 			public void run() {
@@ -361,17 +361,16 @@ public class Sandbox {
 					problemResult.setRunId(problem.getRunId());
 					problemResult.setResultItems(resultItems);
 
-					writeResponse(signalId, CommunicationSignal.ResponseSignal.OK,
+					response(signalId, CommunicationSignal.ResponseSignal.OK,
 							CommunicationSignal.RequestSignal.REQUSET_JUDGED_PROBLEM,
 							gson.toJson(problemResult));
 					isBusy = false;
 					problemCallable = null;
 
 					// 通知对方，主动告诉对方，自己已经空闲了，已经准备好下一次判题
-					writeResponse(null, CommunicationSignal.ResponseSignal.IDLE, null,
-							null);
+					response(null, CommunicationSignal.ResponseSignal.IDLE, null, null);
 				} catch (Exception e) {
-					writeResponse(null, CommunicationSignal.ResponseSignal.ERROR, null,
+					response(null, CommunicationSignal.ResponseSignal.ERROR, null,
 							e.getMessage());
 				}
 			}
@@ -385,8 +384,8 @@ public class Sandbox {
 	 * @param requestCommand 请求的命令
 	 * @param data 数据
 	 */
-	private void writeResponse(String signalId, String responseCommand,
-			String requestCommand, String data) {
+	private void response(String signalId, String responseCommand,
+						  String requestCommand, String data) {
 		try {
 			OutputStream outputStream = communicateSocket.getOutputStream();
 			Response response = new Response();

@@ -21,7 +21,7 @@
 		<!-- 会话工厂 -->
 		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
 		<!-- 扫描包路径 多个包中间用半角逗号分隔 -->
-		<property name="basePackage" value="cn.superman.web.dao" />
+		<property name="basePackage" value="com.lz.web.dao" />
 		<property name="annotationClass" value="com.lz.web.dao.base.MyBatisRepository" />
 	</bean>
 

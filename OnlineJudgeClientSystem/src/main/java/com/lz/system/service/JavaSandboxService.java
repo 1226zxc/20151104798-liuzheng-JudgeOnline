@@ -255,7 +255,7 @@ public class JavaSandboxService {
 
 					JudgeProblemRequest problemRequest = new JudgeProblemRequest();
 					problemRequest.setExecutor(new ProblemResponseExecutor(judgeProblemDTO.getProblemOutputPathList(),
-							judgeProblemDTO.getJudgeResultListener()));
+							judgeProblemDTO.getEvaluationResultHandler()));
 
 					// 创建请求测评机实体类
 					Request request = new Request();
@@ -289,18 +289,25 @@ public class JavaSandboxService {
 
 	}
 
+	/**
+	 * 处理判题处理结果
+	 * 验证运行的代码结果和标准输出文件是否一致
+	 * @param response 本次测评机响应的结果
+	 * @param problemOutputPathList 所有标准输出文件路径
+	 * @param evaluationResultHandler
+	 */
 	private void processJudgeResult(Response response, List<String> problemOutputPathList,
-									JudgeResultListener judgeResultListener) {
+									EvaluationResultHandler evaluationResultHandler) {
 		ProblemJudgeResult problemJudgeResult = new ProblemJudgeResult();
 		List<ProblemJudgeResultItem> problemJudgeResultItems = new ArrayList<ProblemJudgeResultItem>();
 		ProblemResult problemResult = JsonUtil.toBean(response.getData(), ProblemResult.class);
 		List<ProblemResultItem> resultItems = problemResult.getResultItems();
 
 		if (resultItems == null || resultItems.size() == 0) {
-			if (judgeResultListener != null) {
+			if (evaluationResultHandler != null) {
 				problemJudgeResult.setCorrectRate(0);
 				problemJudgeResult.setProblemJudgeResultItems(Collections.<ProblemJudgeResultItem> emptyList());
-				judgeResultListener.judgeResult(problemJudgeResult);
+				evaluationResultHandler.handleResult(problemJudgeResult);
 				return;
 			}
 		}
@@ -358,8 +365,8 @@ public class JavaSandboxService {
 		problemJudgeResult.setCorrectRate((float) correctProblemCount / resultItems.size());
 		problemJudgeResult.setProblemJudgeResultItems(problemJudgeResultItems);
 
-		if (judgeResultListener != null) {
-			judgeResultListener.judgeResult(problemJudgeResult);
+		if (evaluationResultHandler != null) {
+			evaluationResultHandler.handleResult(problemJudgeResult);
 		}
 	}
 
@@ -451,22 +458,26 @@ public class JavaSandboxService {
 		return communicatorManager.getPendingHandleProblemRequest();
 	}
 
-	public interface JudgeResultListener {
-		void judgeResult(ProblemJudgeResult problemJudgeResult);
+	public interface EvaluationResultHandler {
+		/**
+		 * 处理代码运行结果
+		 * @param problemJudgeResult 待处理的运行结果
+		 */
+		void handleResult(ProblemJudgeResult problemJudgeResult);
 	}
 
 	private class ProblemResponseExecutor implements ResponseExecutor {
 		private List<String> problemOutputPathList;
-		private JudgeResultListener judgeResultListener;
+		private EvaluationResultHandler evaluationResultHandler;
 
-		public ProblemResponseExecutor(List<String> problemOutputPathList, JudgeResultListener judgeResultListener) {
+		public ProblemResponseExecutor(List<String> problemOutputPathList, EvaluationResultHandler evaluationResultHandler) {
 			this.problemOutputPathList = problemOutputPathList;
-			this.judgeResultListener = judgeResultListener;
+			this.evaluationResultHandler = evaluationResultHandler;
 		}
 
 		@Override
-		public void executor(Response response) {
-			processJudgeResult(response, problemOutputPathList, judgeResultListener);
+		public void execute(Response response) {
+			processJudgeResult(response, problemOutputPathList, evaluationResultHandler);
 		}
 	}
 
@@ -478,7 +489,7 @@ public class JavaSandboxService {
 		}
 
 		@Override
-		public void executor(Response response) {
+		public void execute(Response response) {
 			if (CommunicationSignal.ResponseSignal.OK.equals(response
 					.getResponseCommand())) {
 				closeSandboxConnectById(sandboxIdCard);
@@ -486,8 +497,7 @@ public class JavaSandboxService {
 		}
 	}
 
-	private static class SandboxStatusResponseExecutor implements
-			ResponseExecutor {
+	private static class SandboxStatusResponseExecutor implements ResponseExecutor {
 		private SandboxStatus sandboxStatus;
 
 		public SandboxStatusResponseExecutor(SandboxStatus sandboxStatus) {
@@ -495,7 +505,7 @@ public class JavaSandboxService {
 		}
 
 		@Override
-		public void executor(Response response) {
+		public void execute(Response response) {
 			SandBoxStatus status = JsonUtil.toBean(response.getData(),
 					SandBoxStatus.class);
 			sandboxStatus.setBeginTime(status.getBeginStartTime());

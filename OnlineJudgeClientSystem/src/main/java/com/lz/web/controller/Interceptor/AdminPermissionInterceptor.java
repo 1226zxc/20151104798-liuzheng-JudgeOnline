@@ -38,10 +38,8 @@ public class AdminPermissionInterceptor extends HandlerInterceptorAdapter {
 	 * @throws Exception
 	 */
 	@Override
-	public boolean preHandle(HttpServletRequest request,
-			HttpServletResponse response, Object handler) throws Exception {
-		Manager manager = (Manager) request.getSession().getAttribute(
-				WebConstant.MANAGER_SESSION_ATTRIBUTE_NAME);
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+		Manager manager = (Manager) request.getSession().getAttribute(WebConstant.MANAGER_SESSION_ATTRIBUTE_NAME);
 
 		// 处理Permission Annotation，实现方法级权限控制
 		HandlerMethod method = (HandlerMethod) handler;

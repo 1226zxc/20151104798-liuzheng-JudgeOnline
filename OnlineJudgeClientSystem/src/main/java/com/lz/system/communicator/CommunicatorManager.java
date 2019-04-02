@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.lz.system.communicator.listener.JudgementMachineHandler;
+import com.lz.system.communicator.listener.EvaluationMachineHandler;
 import com.lz.system.dto.CommonRequest;
 import com.lz.system.dto.CommunicatorStatus;
 import com.lz.system.dto.JavaSandboxStartInfo;
@@ -114,8 +114,8 @@ public class CommunicatorManager {
 					// 移进判题阻塞队列中
 					judgingCommunicators.add(communicator);
 					// 向测评机发送请求数据
-					communicator.sendRequset(request.getRequest(), request.getExecutor());
-					communicator.setJudgeing(true);
+					communicator.sendRequest(request.getRequest(), request.getExecutor());
+					communicator.setJudging(true);
 					communicator = null;
 				}
 			}
@@ -133,7 +133,7 @@ public class CommunicatorManager {
 			// 开启一个新的测评机，返回包含进程号的Process进程对象
 			Process process = openNewSandBox(sandboxStartInfo);
 			// 根据进程号连接到新创建的测评机
-			return connectToNewSandBox(sandboxStartInfo.getIp(), sandboxStartInfo.getPort(), process);
+			return connectToNewMachine(sandboxStartInfo.getIp(), sandboxStartInfo.getPort(), process);
 		} catch (Exception e) {
 			Log4JUtil.logError(e);
 			return null;
@@ -168,9 +168,9 @@ public class CommunicatorManager {
 	 * @param process 包含测评机进程ID的进程对象
 	 * @return
 	 */
-	private String connectToNewSandBox(String ip, int port, Process process) {
+	private String connectToNewMachine(String ip, int port, Process process) {
 		Communicator communicator = new Communicator(ip, port, process);
-		boolean flag = communicator.connectToSandbox();
+		boolean flag = communicator.connectToMachine();
 		if (!flag) {
 			return null;
 		}
@@ -178,8 +178,7 @@ public class CommunicatorManager {
 		String url = ip + ":" + port;
 		allCommunicators.put(url, communicator);
 		noJudgingCommunicators.add(communicator);
-
-		communicator.addSandboxIdleListener(new CommunicatorJudgementMachineHandler(communicator, url));
+		communicator.setEvaluationMachineHandler(new CommunicatorEvaluationMachineHandler(communicator, url));
 		return url;
 	}
 
@@ -219,7 +218,7 @@ public class CommunicatorManager {
 			// 直接关闭沙箱
 			haveStopCommunicators.remove(javaCommunicator);
 			allCommunicators.remove(idCard);
-			javaCommunicator.closeWithSandboxConnect();
+			javaCommunicator.closeWithMachineConnect();
 			return;
 		}
 
@@ -229,7 +228,7 @@ public class CommunicatorManager {
 			boolean remove = noJudgingCommunicators.remove(javaCommunicator);
 			if (remove) {
 				allCommunicators.remove(idCard);
-				javaCommunicator.closeWithSandboxConnect();
+				javaCommunicator.closeWithMachineConnect();
 			}
 		}
 
@@ -241,7 +240,7 @@ public class CommunicatorManager {
 		Communicator communicator = allCommunicators.get(communicatorIdCard);
 
 		if (communicator != null) {
-			communicator.sendRequset(commonRequest.getRequest(),
+			communicator.sendRequest(commonRequest.getRequest(),
 					commonRequest.getExecutor());
 		}
 	}
@@ -257,7 +256,7 @@ public class CommunicatorManager {
 	public CommunicatorStatus getCommunicatorStatus(String communicatorIdCard) {
 		Communicator javaCommunicator = allCommunicators.get(communicatorIdCard);
 		CommunicatorStatus c = new CommunicatorStatus();
-		c.setJudgeing(javaCommunicator.isJudgeing());
+		c.setJudgeing(javaCommunicator.isJudging());
 		c.setStop(javaCommunicator.isStop());
 		c.setWantClose(javaCommunicator.isWantClose());
 		c.setWantStop(javaCommunicator.isWantStop());
@@ -269,23 +268,31 @@ public class CommunicatorManager {
 		return highPriorityProblemRequests.size() + problemRequests.size() + wantHandlePrblemCount;
 	}
 
-	private class CommunicatorJudgementMachineHandler implements JudgementMachineHandler {
+	/**
+	 * 处理测评机状态请求
+	 * 根据指定的测评机负责器{@code communicator}处理communicator
+	 * 状态，和测评机注册信息
+	 */
+	private class CommunicatorEvaluationMachineHandler implements EvaluationMachineHandler {
+		/**
+		 * 需要处理的测评机
+		 */
 		private Communicator communicator;
 		private String communicatorIdCard;
 
-		public CommunicatorJudgementMachineHandler(Communicator communicator, String communicatorIdCard) {
+		public CommunicatorEvaluationMachineHandler(Communicator communicator, String communicatorIdCard) {
 			this.communicator = communicator;
 			this.communicatorIdCard = communicatorIdCard;
 		}
 
 		@Override
-		public void sandBoxIdleNow() {
+		public void handleIdleMachine() {
 			if (communicator == null) {
 				return;
 			}
 			// 从正在判题的阻塞队列中先移除出来
 			judgingCommunicators.remove(communicator);
-			communicator.setJudgeing(false);
+			communicator.setJudging(false);
 			// 先判断，是否被设置了，想要停止工作的标志
 			if (communicator.isWantStop()) {
 				haveStopCommunicators.add(communicator);
@@ -293,7 +300,7 @@ public class CommunicatorManager {
 				communicator.setWantStop(false);
 			} else if (communicator.isWantClose()) {
 				allCommunicators.remove(communicatorIdCard);
-				communicator.closeWithSandboxConnect();
+				communicator.closeWithMachineConnect();
 			} else {
 				noJudgingCommunicators.add(communicator);
 				communicator.setStop(false);

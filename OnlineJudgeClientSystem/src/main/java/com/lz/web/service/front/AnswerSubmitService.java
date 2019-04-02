@@ -174,8 +174,8 @@ public class AnswerSubmitService {
 		List<String> outputPaths = getFileList(problem.getOutputFileRootPath());
 		judgeProblemDTO.setProblemInputPathList(inputPaths);
 		judgeProblemDTO.setProblemOutputPathList(outputPaths);
-		judgeProblemDTO.setJudgeResultListener(
-				new JudgeResultListener(record.getSubmitRecordTableName(),
+		judgeProblemDTO.setEvaluationResultHandler(
+				new EvaluationResultHandler(record.getSubmitRecordTableName(),
 						record.getSubmitId(), dto.getUser().getUserId(), problem));
 
 		// 开始提交判题任务
@@ -204,14 +204,14 @@ public class AnswerSubmitService {
 		return inputPaths;
 	}
 
-	private class JudgeResultListener implements JavaSandboxService.JudgeResultListener {
+	private class EvaluationResultHandler implements JavaSandboxService.EvaluationResultHandler {
 		private String submitRecordTableName;
 		private BigInteger submitRecordId;
 		private Integer userId;
 		private Problem problem;
 
-		public JudgeResultListener(String submitRecordTableName, BigInteger submitRecordId,
-								   Integer userId, Problem problem) {
+		public EvaluationResultHandler(String submitRecordTableName, BigInteger submitRecordId,
+									   Integer userId, Problem problem) {
 			super();
 			this.submitRecordTableName = submitRecordTableName;
 			this.submitRecordId = submitRecordId;
@@ -220,7 +220,7 @@ public class AnswerSubmitService {
 		}
 
 		@Override
-		public void judgeResult(ProblemJudgeResult problemJudgeResult) {
+		public void handleResult(ProblemJudgeResult problemJudgeResult) {
 			SubmitRecord record = new SubmitRecord();
 			record.setSubmitRecordTableName(submitRecordTableName);
 			record.setSubmitId(submitRecordId);

@@ -37,7 +37,7 @@ public class JudgeProblemDTO {
 	 */
 	private List<String> problemOutputPathList;
 
-	private JavaSandboxService.JudgeResultListener judgeResultListener;
+	private JavaSandboxService.EvaluationResultHandler evaluationResultHandler;
 
 	public String getRunId() {
 		return runId;
@@ -87,12 +87,12 @@ public class JudgeProblemDTO {
 		this.memoryLimit = memoryLimit;
 	}
 
-	public JavaSandboxService.JudgeResultListener getJudgeResultListener() {
-		return judgeResultListener;
+	public JavaSandboxService.EvaluationResultHandler getEvaluationResultHandler() {
+		return evaluationResultHandler;
 	}
 
-	public void setJudgeResultListener(JavaSandboxService.JudgeResultListener judgeResultListener) {
-		this.judgeResultListener = judgeResultListener;
+	public void setEvaluationResultHandler(JavaSandboxService.EvaluationResultHandler evaluationResultHandler) {
+		this.evaluationResultHandler = evaluationResultHandler;
 	}
 
 	@Override
@@ -104,7 +104,7 @@ public class JudgeProblemDTO {
 				", memoryLimit=" + memoryLimit +
 				", problemInputPathList=" + problemInputPathList +
 				", problemOutputPathList=" + problemOutputPathList +
-				", judgeResultListener=" + judgeResultListener +
+				", evaluationResultHandler=" + evaluationResultHandler +
 				'}';
 	}
 }
