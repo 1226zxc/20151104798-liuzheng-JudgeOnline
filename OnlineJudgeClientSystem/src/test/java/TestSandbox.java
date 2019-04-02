@@ -2,9 +2,9 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import cn.superman.system.sandbox.constant.CommunicationSignal;
-import cn.superman.system.sandbox.dto.Problem;
-import cn.superman.system.sandbox.dto.Request;
+import com.lz.system.sandbox.constant.CommunicationSignal;
+import com.lz.system.sandbox.dto.Problem;
+import com.lz.system.sandbox.dto.Request;
 
 
 public class TestSandbox {

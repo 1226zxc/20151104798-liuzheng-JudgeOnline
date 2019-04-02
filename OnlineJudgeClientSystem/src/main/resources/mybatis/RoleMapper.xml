@@ -11,7 +11,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.superman.web.dao.RoleDao">
+<mapper namespace="com.lz.web.dao.RoleDao">
 
 	<cache />
 	<sql id="Base_Column_List">
@@ -34,14 +34,14 @@
 		</trim>
 	</sql>
 
-	<insert id="add" parameterType="cn.superman.web.po.Role"
+	<insert id="add" parameterType="com.lz.web.po.Role"
 		useGeneratedKeys="true" keyProperty="roleId">
 		insert into
 		role(role_name,permissions)
 		values(#{roleName},#{permissions})
 	</insert>
 
-	<update id="update" parameterType="cn.superman.web.po.Role">
+	<update id="update" parameterType="com.lz.web.po.Role">
 		update role
 		<set>
 			<if test="roleName != null">
@@ -63,20 +63,20 @@
 		</where>
 	</delete>
 
-	<delete id="deleteWithCondition" parameterType="cn.superman.web.po.Role">
+	<delete id="deleteWithCondition" parameterType="com.lz.web.po.Role">
 		delete from role
 		<where>
 			<include refid="Example_Where_Clause" />
 		</where>
 	</delete>
 
-	<select id="find" resultType="cn.superman.web.po.Role">
+	<select id="find" resultType="com.lz.web.po.Role">
 		select
 		<include refid="Base_Column_List" />
 		from role
 	</select>
 
-	<select id="findById" parameterType="Integer" resultType="cn.superman.web.po.Role">
+	<select id="findById" parameterType="Integer" resultType="com.lz.web.po.Role">
 		select
 		<include refid="Base_Column_List" />
 		from
@@ -87,8 +87,8 @@
 		</where>
 	</select>
 
-	<select id="findWithCondition" parameterType="cn.superman.web.po.Role"
-		resultType="cn.superman.web.po.Role">
+	<select id="findWithCondition" parameterType="com.lz.web.po.Role"
+		resultType="com.lz.web.po.Role">
 		select
 		<include refid="Base_Column_List" />
 		from role
@@ -103,7 +103,7 @@
 		role
 	</select>
 
-	<select id="queryTotalCountWithCondition" parameterType="cn.superman.web.po.Role"
+	<select id="queryTotalCountWithCondition" parameterType="com.lz.web.po.Role"
 		resultType="Long">
 		select count(*)
 		from role

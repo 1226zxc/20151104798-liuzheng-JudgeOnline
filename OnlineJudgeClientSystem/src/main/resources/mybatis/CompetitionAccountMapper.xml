@@ -11,7 +11,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.superman.web.dao.CompetitionAccountDao">
+<mapper namespace="com.lz.web.dao.CompetitionAccountDao">
 
 	<cache />
 	<sql id="Base_Column_List">
@@ -52,7 +52,7 @@
 		</trim>
 	</sql>
 
-	<insert id="add" parameterType="cn.superman.web.po.CompetitionAccount"
+	<insert id="add" parameterType="com.lz.web.po.CompetitionAccount"
 		useGeneratedKeys="true" keyProperty="competitionAccountId">
 		insert into
 		competition_account(login_account,login_password,competition_id,account_remark,account_score,account_code_root_path,is_use)
@@ -70,7 +70,7 @@
 		</foreach>
 	</insert>
 
-	<update id="update" parameterType="cn.superman.web.po.CompetitionAccount">
+	<update id="update" parameterType="com.lz.web.po.CompetitionAccount">
 		update competition_account
 		<set>
 			<if test="loginAccount != null">
@@ -140,21 +140,21 @@
 		</where>
 	</delete>
 
-	<delete id="deleteWithCondition" parameterType="cn.superman.web.po.CompetitionAccount">
+	<delete id="deleteWithCondition" parameterType="com.lz.web.po.CompetitionAccount">
 		delete from competition_account
 		<where>
 			<include refid="Example_Where_Clause" />
 		</where>
 	</delete>
 
-	<select id="find" resultType="cn.superman.web.po.CompetitionAccount">
+	<select id="find" resultType="com.lz.web.po.CompetitionAccount">
 		select
 		<include refid="Base_Column_List" />
 		from competition_account
 	</select>
 
 	<select id="findById" parameterType="Integer"
-		resultType="cn.superman.web.po.CompetitionAccount">
+		resultType="com.lz.web.po.CompetitionAccount">
 		select
 		<include refid="Base_Column_List" />
 		from competition_account
@@ -165,8 +165,8 @@
 		</where>
 	</select>
 
-	<select id="findWithCondition" parameterType="cn.superman.web.po.CompetitionAccount"
-		resultType="cn.superman.web.po.CompetitionAccount">
+	<select id="findWithCondition" parameterType="com.lz.web.po.CompetitionAccount"
+		resultType="com.lz.web.po.CompetitionAccount">
 		select
 		<include refid="Base_Column_List" />
 		from competition_account
@@ -175,8 +175,8 @@
 		</where>
 	</select>
 
-	<select id="findOneWithCondition" parameterType="cn.superman.web.po.CompetitionAccount"
-		resultType="cn.superman.web.po.CompetitionAccount">
+	<select id="findOneWithCondition" parameterType="com.lz.web.po.CompetitionAccount"
+		resultType="com.lz.web.po.CompetitionAccount">
 		select
 		<include refid="Base_Column_List" />
 		from competition_account
@@ -201,7 +201,7 @@
 		competition_account
 	</select>
 
-	<select id="queryTotalCountWithCondition" parameterType="cn.superman.web.po.CompetitionAccount"
+	<select id="queryTotalCountWithCondition" parameterType="com.lz.web.po.CompetitionAccount"
 		resultType="Long">
 		select count(*)
 		from competition_account

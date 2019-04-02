@@ -21,7 +21,7 @@
 
 
 	<!-- 第一步: 创建自定义日期转换规则 -->
-	<bean id="dateConvert" class="cn.superman.web.util.DateConvert" />
+	<bean id="dateConvert" class="com.lz.web.util.DateConvert" />
 
 	<!-- 第二步： 创建convertion-Service ，并注入dateConvert -->
 	<bean id="conversionService"
@@ -51,14 +51,14 @@
 			<mvc:exclude-mapping path="/AdminManagerController/login" />
 			<mvc:exclude-mapping path="/manager/login.html" />
 			<bean
-				class="cn.superman.web.controller.Interceptor.ManagerLoginInterceptor">
+				class="com.lz.web.controller.Interceptor.ManagerLoginInterceptor">
 			</bean>
 		</mvc:interceptor>
 		<!-- 注意拦截器配置的顺序，必须配置在校验了是否已经登录的拦截器后面 -->
 		<mvc:interceptor>
 			<mvc:mapping path="/Admin*/*" />
 			<bean
-				class="cn.superman.web.controller.Interceptor.AdminPermissionInterceptor">
+				class="com.lz.web.controller.Interceptor.AdminPermissionInterceptor">
 			</bean>
 		</mvc:interceptor>
 
@@ -67,7 +67,7 @@
 			<mvc:mapping path="/UserController/sendUpdateCodeEmail" />
 			<mvc:mapping path="/UserController/updateSubmit" />
 			<mvc:mapping path="/ProblemController/submitAnswer" />
-			<bean class="cn.superman.web.controller.Interceptor.UserLoginInterceptor">
+			<bean class="com.lz.web.controller.Interceptor.UserLoginInterceptor">
 			</bean>
 		</mvc:interceptor>
 	</mvc:interceptors>

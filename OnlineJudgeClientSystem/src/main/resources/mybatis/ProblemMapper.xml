@@ -11,7 +11,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.superman.web.dao.ProblemDao">
+<mapper namespace="com.lz.web.dao.ProblemDao">
 
 	<cache />
 	<sql id="Base_Column_List">
@@ -76,7 +76,7 @@
 		</trim>
 	</sql>
 
-	<insert id="add" parameterType="cn.superman.web.po.Problem"
+	<insert id="add" parameterType="com.lz.web.po.Problem"
 		useGeneratedKeys="true" keyProperty="problemId">
 		insert into
 		problem(problem_type_id,problem_name,
@@ -84,7 +84,7 @@
 		values(#{problemTypeId},#{problemName},#{inputFileRootPath},#{outputFileRootPath},#{problemLabel},#{timeLimit},#{memoryLimit},#{problemCreatorId},#{problemContent},#{problemDifficulty},#{problemValue},#{problemVersion},#{isPublish},#{allRightPeopleIds},#{totalSubmitCount},#{totalRightCount})
 	</insert>
 
-	<update id="update" parameterType="cn.superman.web.po.Problem">
+	<update id="update" parameterType="com.lz.web.po.Problem">
 		update problem
 		<set>
 			<if test="problemName != null">
@@ -170,20 +170,20 @@
 		</where>
 	</delete>
 
-	<delete id="deleteWithCondition" parameterType="cn.superman.web.po.Problem">
+	<delete id="deleteWithCondition" parameterType="com.lz.web.po.Problem">
 		delete from problem
 		<where>
 			<include refid="Example_Where_Clause" />
 		</where>
 	</delete>
 
-	<select id="find" resultType="cn.superman.web.po.Problem">
+	<select id="find" resultType="com.lz.web.po.Problem">
 		select
 		<include refid="Base_Column_List" />
 		from problem
 	</select>
 
-	<select id="findById" parameterType="Integer" resultType="cn.superman.web.po.Problem">
+	<select id="findById" parameterType="Integer" resultType="com.lz.web.po.Problem">
 		select
 		<include refid="Base_Column_List" />
 		from problem
@@ -195,15 +195,15 @@
 	</select>
 
 	<select id="findPulishProblemByLikeName" parameterType="String"
-		resultType="cn.superman.web.po.Problem">
+		resultType="com.lz.web.po.Problem">
 		select
 		<include refid="Base_Column_List" />
 		from problem where problem_name like '%${_parameter}%' and is_publish
 		= 1
 	</select>
 
-	<select id="findWithCondition" parameterType="cn.superman.web.po.Problem"
-		resultType="cn.superman.web.po.Problem">
+	<select id="findWithCondition" parameterType="com.lz.web.po.Problem"
+		resultType="com.lz.web.po.Problem">
 		select
 		<include refid="Base_Column_List" />
 		from problem
@@ -218,7 +218,7 @@
 		problem
 	</select>
 
-	<select id="queryTotalCountWithCondition" parameterType="cn.superman.web.po.Problem"
+	<select id="queryTotalCountWithCondition" parameterType="com.lz.web.po.Problem"
 		resultType="Long">
 		select count(*)
 		from problem

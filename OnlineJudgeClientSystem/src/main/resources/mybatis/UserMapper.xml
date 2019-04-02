@@ -11,7 +11,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.superman.web.dao.UserDao">
+<mapper namespace="com.lz.web.dao.UserDao">
 
 	<cache />
 	<sql id="Base_Column_List">
@@ -61,14 +61,14 @@
 		</trim>
 	</sql>
 
-	<insert id="add" parameterType="cn.superman.web.po.User"
+	<insert id="add" parameterType="com.lz.web.po.User"
 		useGeneratedKeys="true" keyProperty="userId">
 		insert into
 		user(account,password,nickname,source_file_root_path,right_problem_count,have_done_problem,email,submit_record_table_name,is_ban,total_solve_value,last_submit_time)
 		values(#{account},#{password},#{nickname},#{sourceFileRootPath},#{rightProblemCount},#{haveDoneProblem},#{email},#{submitRecordTableName},#{isBan},#{totalSolveValue},#{lastSubmitTime})
 	</insert>
 
-	<update id="update" parameterType="cn.superman.web.po.User">
+	<update id="update" parameterType="com.lz.web.po.User">
 		update user
 		<set>
 			<if test="account != null">
@@ -193,20 +193,20 @@
 		</where>
 	</delete>
 
-	<delete id="deleteWithCondition" parameterType="cn.superman.web.po.User">
+	<delete id="deleteWithCondition" parameterType="com.lz.web.po.User">
 		delete from user
 		<where>
 			<include refid="Example_Where_Clause" />
 		</where>
 	</delete>
 
-	<select id="find" resultType="cn.superman.web.po.User">
+	<select id="find" resultType="com.lz.web.po.User">
 		select
 		<include refid="Base_Column_List" />
 		from user
 	</select>
 
-	<select id="findById" parameterType="Integer" resultType="cn.superman.web.po.User">
+	<select id="findById" parameterType="Integer" resultType="com.lz.web.po.User">
 		select
 		<include refid="Base_Column_List" />
 		from user
@@ -217,8 +217,8 @@
 		</where>
 	</select>
 
-	<select id="findWithCondition" parameterType="cn.superman.web.po.User"
-		resultType="cn.superman.web.po.User">
+	<select id="findWithCondition" parameterType="com.lz.web.po.User"
+		resultType="com.lz.web.po.User">
 		select
 		<include refid="Base_Column_List" />
 		from user
@@ -228,7 +228,7 @@
 	</select>
 	
 	<select id="findWithLastSubmitTimeGap" 
-		resultType="cn.superman.web.po.User">
+		resultType="com.lz.web.po.User">
 		select
 		<include refid="Base_Column_List" />
 		from user
@@ -243,7 +243,7 @@
 		user
 	</select>
 
-	<select id="queryTotalCountWithCondition" parameterType="cn.superman.web.po.User"
+	<select id="queryTotalCountWithCondition" parameterType="com.lz.web.po.User"
 		resultType="Long">
 		select count(*)
 		from user

@@ -11,7 +11,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.superman.web.dao.ManagerDao">
+<mapper namespace="com.lz.web.dao.ManagerDao">
 
 	<cache />
 	<sql id="Base_Column_List">
@@ -40,26 +40,26 @@
 		</trim>
 	</sql>
 
-	<resultMap type="cn.superman.web.po.Manager" id="DefaultManageResultMap">
+	<resultMap type="com.lz.web.po.Manager" id="DefaultManageResultMap">
 		<id column="manager_id" jdbcType="INTEGER" property="managerId" />
 		<result column="account" jdbcType="VARCHAR" property="account" />
 		<result column="password" jdbcType="VARCHAR" property="password" />
 		<result column="nickname" jdbcType="VARCHAR" property="nickname" />
-		<association property="role" javaType="cn.superman.web.po.Role">
+		<association property="role" javaType="com.lz.web.po.Role">
 			<id column="role_id" jdbcType="INTEGER" property="roleId" />
 			<result column="role_name" jdbcType="VARCHAR" property="roleName" />
 			<result column="permissions" jdbcType="VARCHAR" property="permissions" />
 		</association>
 	</resultMap>
 
-	<insert id="add" parameterType="cn.superman.web.po.Manager"
+	<insert id="add" parameterType="com.lz.web.po.Manager"
 		useGeneratedKeys="true" keyProperty="managerId">
 		insert into
 		manager(account,password,nickname,role_id)
 		values(#{account},#{password},#{nickname},#{role.roleId})
 	</insert>
 
-	<update id="update" parameterType="cn.superman.web.po.Manager">
+	<update id="update" parameterType="com.lz.web.po.Manager">
 		update manager
 		<set>
 			<if test="account != null">
@@ -87,7 +87,7 @@
 		</where>
 	</delete>
 
-	<delete id="deleteWithCondition" parameterType="cn.superman.web.po.Manager">
+	<delete id="deleteWithCondition" parameterType="com.lz.web.po.Manager">
 		delete from manager
 		<where>
 			<include refid="Example_Where_Clause" />
@@ -117,7 +117,7 @@
 		</where>
 	</select>
 
-	<select id="findWithCondition" parameterType="cn.superman.web.po.Manager"
+	<select id="findWithCondition" parameterType="com.lz.web.po.Manager"
 		resultMap="DefaultManageResultMap">
 		select
 		<include refid="Base_Column_List" />
@@ -136,7 +136,7 @@
 		manager
 	</select>
 
-	<select id="queryTotalCountWithCondition" parameterType="cn.superman.web.po.Manager"
+	<select id="queryTotalCountWithCondition" parameterType="com.lz.web.po.Manager"
 		resultType="Long">
 		select count(*)
 		from manager

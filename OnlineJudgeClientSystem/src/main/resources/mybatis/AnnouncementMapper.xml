@@ -11,7 +11,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.superman.web.dao.AnnouncementDao">
+<mapper namespace="com.lz.web.dao.AnnouncementDao">
 
 	<cache />
 	<sql id="Base_Column_List">
@@ -49,14 +49,14 @@
 		</trim>
 	</sql>
 
-	<insert id="add" parameterType="cn.superman.web.po.Announcement"
+	<insert id="add" parameterType="com.lz.web.po.Announcement"
 		useGeneratedKeys="true" keyProperty="announcementId">
 		insert into
 		announcement(announcement_title,announcement_introduction,announcement_content,announcement_create_manager_id,announcement_create_time,announcement_publish_time,is_publish)
 		values(#{announcementTitle},#{announcementIntroduction},#{announcementContent},#{announcementCreateManagerId},#{announcementCreateTime},#{announcementPublishTime},#{isPublish})
 	</insert>
 
-	<update id="update" parameterType="cn.superman.web.po.Announcement">
+	<update id="update" parameterType="com.lz.web.po.Announcement">
 		update announcement
 		<set>
 			<if test="announcementTitle != null">
@@ -97,21 +97,21 @@
 		</where>
 	</delete>
 
-	<delete id="deleteWithCondition" parameterType="cn.superman.web.po.Announcement">
+	<delete id="deleteWithCondition" parameterType="com.lz.web.po.Announcement">
 		delete from announcement
 		<where>
 			<include refid="Example_Where_Clause" />
 		</where>
 	</delete>
 
-	<select id="find" resultType="cn.superman.web.po.Announcement">
+	<select id="find" resultType="com.lz.web.po.Announcement">
 		select
 		<include refid="Base_Column_List" />
 		from announcement
 	</select>
 
 	<select id="findById" parameterType="Integer"
-		resultType="cn.superman.web.po.Announcement">
+		resultType="com.lz.web.po.Announcement">
 		select
 		<include refid="Base_Column_List" />
 		from announcement
@@ -122,7 +122,7 @@
 		</where>
 	</select>
 
-	<select id="findWithCondition" parameterType="cn.superman.web.po.Announcement" resultType="cn.superman.web.po.Announcement">
+	<select id="findWithCondition" parameterType="com.lz.web.po.Announcement" resultType="com.lz.web.po.Announcement">
 		select
 		<include refid="Base_Column_List" />
 		from announcement
@@ -137,7 +137,7 @@
 		announcement
 	</select>
 
-	<select id="queryTotalCountWithCondition" parameterType="cn.superman.web.po.Announcement"
+	<select id="queryTotalCountWithCondition" parameterType="com.lz.web.po.Announcement"
 		resultType="Long">
 		select count(*)
 		from announcement

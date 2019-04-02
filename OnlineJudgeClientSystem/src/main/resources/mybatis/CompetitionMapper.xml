@@ -11,7 +11,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.superman.web.dao.CompetitionDao">
+<mapper namespace="com.lz.web.dao.CompetitionDao">
 
 	<cache />
 	<sql id="Base_Column_List">
@@ -75,14 +75,14 @@
 		</trim>
 	</sql>
 
-	<insert id="add" parameterType="cn.superman.web.po.Competition"
+	<insert id="add" parameterType="com.lz.web.po.Competition"
 		useGeneratedKeys="true" keyProperty="competitionId">
 		insert into
 		competition(competition_name,competition_description,competition_begin_time,competition_end_time,competition_players_count,is_close,is_publish,competition_problem_ids,competition_content_root_path,is_can_declare,is_judge,competition_apply_begin_time,competition_apply_end_time)
 		values(#{competitionName},#{competitionDescription},#{competitionBeginTime},#{competitionEndTime},#{competitionPlayersCount},#{isClose},#{isPublish},#{competitionProblemIds},#{competitionContentRootPath},#{isCanDeclare},#{isJudge},#{competitionApplyBeginTime},#{competitionApplyEndTime})
 	</insert>
 
-	<update id="update" parameterType="cn.superman.web.po.Competition">
+	<update id="update" parameterType="com.lz.web.po.Competition">
 		update competition
 		<set>
 			<if test="competitionName != null">
@@ -145,14 +145,14 @@
 		</where>
 	</delete>
 
-	<delete id="deleteWithCondition" parameterType="cn.superman.web.po.Competition">
+	<delete id="deleteWithCondition" parameterType="com.lz.web.po.Competition">
 		delete from competition
 		<where>
 			<include refid="Example_Where_Clause" />
 		</where>
 	</delete>
 
-	<select id="find" resultType="cn.superman.web.po.Competition">
+	<select id="find" resultType="com.lz.web.po.Competition">
 		select
 		<include refid="Base_Column_List" />
 		from competition
@@ -162,7 +162,7 @@
 	</select>
 
 	<select id="findById" parameterType="Integer"
-		resultType="cn.superman.web.po.Competition">
+		resultType="com.lz.web.po.Competition">
 		select
 		<include refid="Base_Column_List" />
 		from competition
@@ -173,8 +173,8 @@
 		</where>
 	</select>
 
-	<select id="findWithCondition" parameterType="cn.superman.web.po.Competition"
-		resultType="cn.superman.web.po.Competition">
+	<select id="findWithCondition" parameterType="com.lz.web.po.Competition"
+		resultType="com.lz.web.po.Competition">
 		select
 		<include refid="Base_Column_List" />
 		from competition
@@ -192,7 +192,7 @@
 		competition
 	</select>
 
-	<select id="queryTotalCountWithCondition" parameterType="cn.superman.web.po.Competition"
+	<select id="queryTotalCountWithCondition" parameterType="com.lz.web.po.Competition"
 		resultType="Long">
 		select count(*)
 		from competition

@@ -11,7 +11,7 @@
     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="cn.superman.web.dao.SubmitRecordDao">
+<mapper namespace="com.lz.web.dao.SubmitRecordDao">
 
 	<cache />
 	<sql id="Base_Column_List">
@@ -54,7 +54,7 @@
 			</if>
 		</trim>
 	</sql>
-	<insert id="add" parameterType="cn.superman.web.po.SubmitRecord"
+	<insert id="add" parameterType="com.lz.web.po.SubmitRecord"
 		useGeneratedKeys="true" keyProperty="submitId">
 		insert into
 		${submitRecordTableName}(submit_time,
@@ -62,7 +62,7 @@
 		values(#{submitTime},#{submitProblemId},#{submitUserId},#{score},#{isAccepted},#{details},#{codeLanguage},#{codeFilePath},#{submitRecordTableName})
 	</insert>
 
-	<update id="update" parameterType="cn.superman.web.po.SubmitRecord">
+	<update id="update" parameterType="com.lz.web.po.SubmitRecord">
 		update ${submitRecordTableName}
 		<set>
 			<if test="submitTime != null">
@@ -96,15 +96,15 @@
 		where submit_id = #{submitId}
 	</update>
 
-	<delete id="deleteWithCondition" parameterType="cn.superman.web.po.SubmitRecord">
+	<delete id="deleteWithCondition" parameterType="com.lz.web.po.SubmitRecord">
 		delete from ${submitRecordTableName}
 		<where>
 			<include refid="Example_Where_Clause" />
 		</where>
 	</delete>
 
-	<select id="findWithCondition" parameterType="cn.superman.web.po.SubmitRecord"
-		resultType="cn.superman.web.po.SubmitRecord">
+	<select id="findWithCondition" parameterType="com.lz.web.po.SubmitRecord"
+		resultType="com.lz.web.po.SubmitRecord">
 		select
 		<include refid="Base_Column_List" />
 		from ${submitRecordTableName}
@@ -113,7 +113,7 @@
 		</where>
 	</select>
 
-	<select id="queryTotalCountWithCondition" parameterType="cn.superman.web.po.SubmitRecord"
+	<select id="queryTotalCountWithCondition" parameterType="com.lz.web.po.SubmitRecord"
 		resultType="Long">
 		select count(*)
 		from ${submitRecordTableName}
