@@ -1,6 +1,6 @@
 package com.lz.web.service.admin;
 
-import com.lz.system.service.JavaSandboxService;
+import com.lz.system.service.EvaluationMachineService;
 import com.lz.system.service.observer.SandboxStatusObserver;
 import com.lz.util.AppSystemInfoUtil;
 import com.lz.util.OperationSystemInfoUtil;
@@ -8,34 +8,34 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AdminOJSystemService {
-	private JavaSandboxService javaSandboxService;
+	private EvaluationMachineService evaluationMachineService;
 
 	public AdminOJSystemService() {
-		javaSandboxService = JavaSandboxService.getInstance();
+		evaluationMachineService = EvaluationMachineService.getInstance();
 	}
 
 	public void openNewJavaSandbox() {
-		javaSandboxService.openNewJavaSandbox();
+		evaluationMachineService.openNewJavaSandbox();
 	}
 
 	public void addJavaSandboxStatusListen(SandboxStatusObserver o) {
-		javaSandboxService.addSandboxStatusObserver(o);
+		evaluationMachineService.addSandboxStatusObserver(o);
 	}
 
 	public void removeJavaSandboxStatusListen(SandboxStatusObserver o) {
-		javaSandboxService.removeSandboxStatusObserver(o);
+		evaluationMachineService.removeSandboxStatusObserver(o);
 	}
 
 	public void closeAllJavaSandbox() {
-		javaSandboxService.closeAllSandbox();
+		evaluationMachineService.closeAllSandbox();
 	}
 
 	public void closeSandboxById(String idCard) {
-		javaSandboxService.closeSandboxById(idCard);
+		evaluationMachineService.closeSandboxById(idCard);
 	}
 
 	public int getPendingHandleProblemRequest() {
-		return javaSandboxService.getPendingHandleProblemCount();
+		return evaluationMachineService.getPendingHandleProblemCount();
 	}
 
 	public OperationSystemInfoUtil.OperationSystemInfo getOperationSystemInfo() {

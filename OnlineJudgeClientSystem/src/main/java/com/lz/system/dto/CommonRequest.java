@@ -4,6 +4,9 @@ import com.lz.system.commandExecutor.ResponseExecutor;
 import com.lz.system.sandbox.dto.Request;
 
 public class CommonRequest {
+	/**
+	 * 响应结果处理器
+	 */
 	private ResponseExecutor executor;
 
 	/**

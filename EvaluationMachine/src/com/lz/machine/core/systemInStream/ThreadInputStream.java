@@ -1,4 +1,4 @@
-package com.lz.sandbox.core.systemInStream;
+package com.lz.machine.core.systemInStream;
 
 import java.io.IOException;
 import java.io.InputStream;

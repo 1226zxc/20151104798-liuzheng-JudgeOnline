@@ -2,7 +2,7 @@ package com.lz.system.service.dto;
 
 import java.util.List;
 
-import com.lz.system.service.JavaSandboxService;
+import com.lz.system.service.EvaluationMachineService;
 
 /**
  * 判题任务实体类
@@ -15,7 +15,7 @@ public class JudgeProblemDTO {
 	/**
 	 * 提交的保存到本地的java源文件路径
 	 */
-	private String javaFilePath;
+	private String sourceCodeFilePath;
 
 	/**
 	 * 时间限制
@@ -37,7 +37,7 @@ public class JudgeProblemDTO {
 	 */
 	private List<String> problemOutputPathList;
 
-	private JavaSandboxService.EvaluationResultHandler evaluationResultHandler;
+	private EvaluationMachineService.EvaluationResultHandler evaluationResultHandler;
 
 	public String getRunId() {
 		return runId;
@@ -47,12 +47,12 @@ public class JudgeProblemDTO {
 		this.runId = runId;
 	}
 
-	public String getJavaFilePath() {
-		return javaFilePath;
+	public String getSourceCodeFilePath() {
+		return sourceCodeFilePath;
 	}
 
-	public void setJavaFilePath(String javaFilePath) {
-		this.javaFilePath = javaFilePath;
+	public void setSourceCodeFilePath(String sourceCodeFilePath) {
+		this.sourceCodeFilePath = sourceCodeFilePath;
 	}
 
 	public List<String> getProblemInputPathList() {
@@ -87,11 +87,11 @@ public class JudgeProblemDTO {
 		this.memoryLimit = memoryLimit;
 	}
 
-	public JavaSandboxService.EvaluationResultHandler getEvaluationResultHandler() {
+	public EvaluationMachineService.EvaluationResultHandler getEvaluationResultHandler() {
 		return evaluationResultHandler;
 	}
 
-	public void setEvaluationResultHandler(JavaSandboxService.EvaluationResultHandler evaluationResultHandler) {
+	public void setEvaluationResultHandler(EvaluationMachineService.EvaluationResultHandler evaluationResultHandler) {
 		this.evaluationResultHandler = evaluationResultHandler;
 	}
 
@@ -99,7 +99,7 @@ public class JudgeProblemDTO {
 	public String toString() {
 		return "JudgeProblemDTO{" +
 				"runId='" + runId + '\'' +
-				", javaFilePath='" + javaFilePath + '\'' +
+				", sourceCodeFilePath='" + sourceCodeFilePath + '\'' +
 				", timeLimit=" + timeLimit +
 				", memoryLimit=" + memoryLimit +
 				", problemInputPathList=" + problemInputPathList +

@@ -31,7 +31,7 @@ import org.springframework.util.ResourceUtils;
 
 import com.lz.constant.ConstantParameter;
 import com.lz.system.commandExecutor.ResponseExecutor;
-import com.lz.system.sandbox.dto.Problem;
+import com.lz.system.sandbox.dto.Task;
 import com.lz.system.sandbox.dto.ProblemResult;
 import com.lz.system.sandbox.dto.ProblemResultItem;
 import com.lz.system.sandbox.dto.Request;
@@ -47,34 +47,34 @@ import com.lz.util.Log4JUtil;
 import com.lz.web.exception.ServiceLogicException;
 import com.lz.web.util.ThreadFactoryUtil;
 
-public class JavaSandboxService {
+public class EvaluationMachineService {
 	private CommunicatorManager communicatorManager = null;
 	private Map<String, SandboxStatus> sandboxStatusMap = new ConcurrentHashMap<String, SandboxStatus>();
-	private static volatile JavaSandboxService javaSandboxService;
+	private static volatile EvaluationMachineService evaluationMachineService;
 	private List<SandboxStatusObserver> sandboxStatusObservers = new CopyOnWriteArrayList<SandboxStatusObserver>();
 	private ScheduledExecutorService statusTimer = Executors
 			.newScheduledThreadPool(1, ThreadFactoryUtil
-					.getLogThreadFactory(JavaSandboxService.class.getName()
+					.getLogThreadFactory(EvaluationMachineService.class.getName()
 							+ " statusTimer"));
 	/**
 	 * 执行判题任务的线程池
 	 */
 	private ExecutorService executorService = Executors.newCachedThreadPool(ThreadFactoryUtil
-					.getLogThreadFactory(JavaSandboxService.class.getName() + " executorService"));
+					.getLogThreadFactory(EvaluationMachineService.class.getName() + " executorService"));
 
-	public static JavaSandboxService getInstance() {
-		if (javaSandboxService == null) {
-			synchronized (JavaSandboxService.class) {
-				if (javaSandboxService == null) {
-					javaSandboxService = new JavaSandboxService();
+	public static EvaluationMachineService getInstance() {
+		if (evaluationMachineService == null) {
+			synchronized (EvaluationMachineService.class) {
+				if (evaluationMachineService == null) {
+					evaluationMachineService = new EvaluationMachineService();
 				}
 			}
 		}
 
-		return javaSandboxService;
+		return evaluationMachineService;
 	}
 
-	private JavaSandboxService() {
+	private EvaluationMachineService() {
 		communicatorManager = CommunicatorManager.getInstance();
 		openStatusListen();
 	}
@@ -124,7 +124,7 @@ public class JavaSandboxService {
 	}
 
 	public static void main(String[] args) throws IOException {
-		new JavaSandboxService().openNewJavaSandbox();
+		new EvaluationMachineService().openNewJavaSandbox();
 	}
 
 	/**
@@ -230,20 +230,20 @@ public class JavaSandboxService {
 	}
 
 	/**
-	 * 提交判题任务，多线程处理。处理步骤为
+	 * 多线程提交判题任务，多线程处理去处理逻辑。处理步骤为
 	 * - 编译java源文件
 	 * - 设置时间限制、内存限制、源代码路径、测试用例等判题任务信息，以便传递测评机
 	 * - 设置本次请求测评机的实体类信息，包括测评机的行为指令
 	 * @param judgeProblemDTO 保存着时间限制、内存限制、源代码路径、测试用例
 	 * @param errorListener
 	 */
-	public void commitJudgementRequest(final JudgeProblemDTO judgeProblemDTO, final ErrorListener errorListener) {
+	public void commitEvaluationRequest(final JudgeProblemDTO judgeProblemDTO, final ErrorListener errorListener) {
 		executorService.execute(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					// 编译java文件
-					boolean flag = JavaCompilerUtil.compilerJavaFile(judgeProblemDTO.getJavaFilePath(),
+					boolean flag = JavaCompilerUtil.compilerJavaFile(judgeProblemDTO.getSourceCodeFilePath(),
 							ConstantParameter.CLASS_FILE_ROOT_PATH);
 
 					if (!flag) {
@@ -257,27 +257,26 @@ public class JavaSandboxService {
 					problemRequest.setExecutor(new ProblemResponseExecutor(judgeProblemDTO.getProblemOutputPathList(),
 							judgeProblemDTO.getEvaluationResultHandler()));
 
-					// 创建请求测评机实体类
 					Request request = new Request();
 					// 设置判题请求指令，后台测评机将会进行判题
 					request.setCommand(CommunicationSignal.RequestSignal.REQUSET_JUDGED_PROBLEM);
 
-					Problem problem = new Problem();
-					problem.setTimeLimit(judgeProblemDTO.getTimeLimit());
-					problem.setRunId(judgeProblemDTO.getRunId());
+					Task task = new Task();
+					task.setTimeLimit(judgeProblemDTO.getTimeLimit());
+					task.setRunId(judgeProblemDTO.getRunId());
 					// 数据库记录的是KB，但是测评机那边要的是B，所以这里要转换一下单位
-					problem.setMemoryLimit(judgeProblemDTO.getMemoryLimit() * 1024);
-					problem.setInputDataFilePathList(judgeProblemDTO.getProblemInputPathList());
+					task.setMemoryLimit(judgeProblemDTO.getMemoryLimit() * 1024);
+					task.setInputDataFilePathList(judgeProblemDTO.getProblemInputPathList());
 					// 截取文件名
-					problem.setClassFileName(judgeProblemDTO.getJavaFilePath().substring(
-									judgeProblemDTO.getJavaFilePath().lastIndexOf(File.separator) + 1,
-									judgeProblemDTO.getJavaFilePath().lastIndexOf(".")));
+					task.setClassFileName(judgeProblemDTO.getSourceCodeFilePath().substring(
+									judgeProblemDTO.getSourceCodeFilePath().lastIndexOf(File.separator) + 1,
+									judgeProblemDTO.getSourceCodeFilePath().lastIndexOf(".")));
 
-					request.setData(JsonUtil.toJson(problem));
+					request.setTask(JsonUtil.toJson(task));
 					problemRequest.setRequest(request);
 
 					// 添加判题等待队列 BlockingQueue
-					communicatorManager.addJudgeProblemRequest(problemRequest);
+					communicatorManager.addEvaluationRequest(problemRequest);
 				} catch (Exception e) {
 					if (errorListener != null) {
 						errorListener.onError(e);
@@ -412,8 +411,7 @@ public class JavaSandboxService {
 			public void run() {
 				sandboxStatusMap.remove(idCard);
 				CommonRequest commonRequest = new CommonRequest();
-				commonRequest.setExecutor(new CloseSandboxResponseExecutor(
-						idCard));
+				commonRequest.setExecutor(new CloseSandboxResponseExecutor(idCard));
 				Request request = new Request();
 				request.setCommand(CommunicationSignal.RequestSignal.CLOSE_SANDBOX);
 				commonRequest.setRequest(request);
@@ -424,8 +422,7 @@ public class JavaSandboxService {
 	}
 
 	public void closeAllSandbox() {
-		for (Map.Entry<String, SandboxStatus> entry : sandboxStatusMap
-				.entrySet()) {
+		for (Map.Entry<String, SandboxStatus> entry : sandboxStatusMap.entrySet()) {
 			closeSandboxById(entry.getValue().getIdCard());
 		}
 	}

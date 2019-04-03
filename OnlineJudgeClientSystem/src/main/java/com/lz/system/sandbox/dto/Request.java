@@ -17,8 +17,12 @@ public class Request {
 	/**
 	 * 测评机使用的请求数据
 	 */
-	private String data;
-	private String signalId;
+	private String task;
+
+	/**
+	 * 与测评机通信的id，每一个实例此处id都是不同的
+	 */
+	private String requestId;
 
 	public String getCommand() {
 		return command;
@@ -28,20 +32,20 @@ public class Request {
 		this.command = command;
 	}
 
-	public String getData() {
-		return data;
+	public String getTask() {
+		return task;
 	}
 
-	public void setData(String data) {
-		this.data = data;
+	public void setTask(String task) {
+		this.task = task;
 	}
 
-	public String getSignalId() {
-		return signalId;
+	public String getRequestId() {
+		return requestId;
 	}
 
-	public void setSignalId(String signalId) {
-		this.signalId = signalId;
+	public void setRequestId(String requestId) {
+		this.requestId = requestId;
 	}
 
 }

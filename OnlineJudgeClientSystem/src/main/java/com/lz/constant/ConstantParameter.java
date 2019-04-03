@@ -16,7 +16,7 @@ public final class ConstantParameter {
     // 题目标准输入输出加密用的盐
     public static final String PROBLEM_STANDARD_FILE_PATH_SEED = "asdsada";
     public static final int SUBMIT_RECORD_TABLE_CREATE_GAP = 10;
-    public static final String SUBMIT_RECORD_TOKEN_NAME = "token";
+    public static final String NEXT_SUBMIT_RECORD_TIME = "NEXT_SUBMIT_RECORD_TIME";
 
     /**
      * 代码提交间隔时间

@@ -1,4 +1,4 @@
-package com.lz.sandbox.core.systemOutStream;
+package com.lz.machine.core.systemOutStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

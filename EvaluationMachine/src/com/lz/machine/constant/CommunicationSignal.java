@@ -1,4 +1,4 @@
-package com.lz.sandbox.constant;
+package com.lz.machine.constant;
 
 public final class CommunicationSignal {
 

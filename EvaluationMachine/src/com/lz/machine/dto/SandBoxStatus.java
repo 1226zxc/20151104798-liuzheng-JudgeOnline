@@ -1,4 +1,4 @@
-package com.lz.sandbox.dto;
+package com.lz.machine.dto;
 
 public class SandBoxStatus {
 	private String pid;

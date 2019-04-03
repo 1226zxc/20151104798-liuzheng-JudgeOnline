@@ -1,19 +1,23 @@
-package com.lz.sandbox.dto;
+package com.lz.system.sandbox.dto;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 保存这个问题的相关内容
- * 有时间限制，内存限制、类加载路径
- * 运行id和输入数据文件路径
+ * 问题描述实体类。描述判题任务的信息：
+ * - 时间限制
+ * - 内存限制
+ * - class文件名
+ * - 本次运行id
+ * - 测试用例输入文件路径
+ * 此类用于与测评机通信，前台与测评机之间传递
+ * 的格式即是此类
+ *
+ * @author 刘铮
  */
-public class Problem {
+public class Task {
 	private long timeLimit;
 	private long memoryLimit;
-	/**
-	 * 保存的是待测验的class文件名
-	 */
 	private String classFileName;
 	private String runId;
 	private List<String> inputDataFilePathList = new ArrayList<String>();
@@ -56,14 +60,6 @@ public class Problem {
 
 	public void setInputDataFilePathList(List<String> inputDataFilePathList) {
 		this.inputDataFilePathList = inputDataFilePathList;
-	}
-
-	@Override
-	public String toString() {
-		return "Problem [timeLimit=" + timeLimit + ", memoryLimit="
-				+ memoryLimit + ", classFileName=" + classFileName + ", runId="
-				+ runId + ", inputDataFilePathList=" + inputDataFilePathList
-				+ "]";
 	}
 
 }

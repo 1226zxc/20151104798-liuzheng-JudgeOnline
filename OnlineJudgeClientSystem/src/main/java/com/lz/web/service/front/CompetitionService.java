@@ -108,7 +108,7 @@ public class CompetitionService extends PageService<Competition, Competition> {
 
 			// 暂时默认代码都是JAVA
 			File codeFile = new File(codeDir.getAbsolutePath() + File.separator
-					+ javaFileName + WebConstant.DEFAULT_CODE_FILE_SUFFIX);
+					+ javaFileName + WebConstant.SOURCE_CODE_FILE_SUFFIX);
 			FileUtils.write(codeFile, code);
 		} catch (IOException e) {
 			Log4JUtil.logError(e);

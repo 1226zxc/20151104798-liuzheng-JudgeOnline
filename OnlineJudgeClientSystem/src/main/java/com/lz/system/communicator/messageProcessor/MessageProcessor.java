@@ -121,9 +121,9 @@ public class MessageProcessor {
 	 */
 	public void transmitRequest(Request request, ResponseExecutor executor) {
 		try {
-			request.setSignalId(UUIDUtil.getUUID());
+			request.setRequestId(UUIDUtil.getUUID());
 			String data = JsonUtil.toJson(request);
-			addExecutor(request.getSignalId(), executor);
+			addExecutor(request.getRequestId(), executor);
 			// 此时的输出流是Socket输出流，意味着向网络写入数据
 			transmitter.write((data + "\n").getBytes());
 		} catch (IOException e) {
@@ -131,8 +131,8 @@ public class MessageProcessor {
 		}
 	}
 
-	private void addExecutor(String signalId, ResponseExecutor commandExecutor) {
-		responseExecutors.put(signalId, commandExecutor);
+	private void addExecutor(String requestId, ResponseExecutor commandExecutor) {
+		responseExecutors.put(requestId, commandExecutor);
 	}
 
 	public EvaluationMachineHandler getMachineHandler() {

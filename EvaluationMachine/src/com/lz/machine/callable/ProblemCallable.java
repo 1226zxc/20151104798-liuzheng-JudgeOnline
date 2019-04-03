@@ -1,4 +1,4 @@
-package com.lz.sandbox.callable;
+package com.lz.machine.callable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -15,10 +15,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.lz.sandbox.core.systemInStream.ThreadInputStream;
-import com.lz.sandbox.core.systemOutStream.CacheOutputStream;
-import com.lz.sandbox.dto.Problem;
-import com.lz.sandbox.dto.ProblemResultItem;
+import com.lz.machine.core.systemInStream.ThreadInputStream;
+import com.lz.machine.core.systemOutStream.CacheOutputStream;
+import com.lz.machine.dto.Task;
+import com.lz.machine.dto.ProblemResultItem;
 
 /**
  * 根据多组测试用例测评代码的线程规则定义类
@@ -34,7 +34,7 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 	/**
 	 * 前台传输过来的此问题的限制信息
 	 */
-	private Problem problem;
+	private Task task;
 	/**
 	 * 重定向后的标准输出流
 	 */
@@ -76,14 +76,14 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 	 * 构造一个处理问题的线程
 	 *
 	 * @param mainMethod     目标代码主方法的类型
-	 * @param problem        描述这个问题信息的实例
+	 * @param task        描述这个问题信息的实例
 	 * @param resultBuffer   重定向后的标准输出流
 	 * @param threadSystemIn 重定向后的标准输入流
 	 */
-	public ProblemCallable(Method mainMethod, Problem problem,
+	public ProblemCallable(Method mainMethod, Task task,
 						   CacheOutputStream resultBuffer, ThreadInputStream threadSystemIn) {
 		this.mainMethod = mainMethod;
-		this.problem = problem;
+		this.task = task;
 		this.resultBuffer = resultBuffer;
 		this.threadSystemIn = threadSystemIn;
 		run = Runtime.getRuntime();
@@ -99,7 +99,7 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 	@Override
 	public List<ProblemResultItem> call() throws Exception {
 		// 获取测试用例文件
-		List<String> paths = problem.getInputDataFilePathList();
+		List<String> paths = task.getInputDataFilePathList();
 		final List<ProblemResultItem> resultItems = new ArrayList<ProblemResultItem>();
 		//设置计数器，计数值为所有测试用例的个数
 		countDownLatch = new CountDownLatch(paths.size());
@@ -147,7 +147,7 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 			beginTime = System.nanoTime();
 
 			// 最多等待两毫秒获取计算结果，怕没有计算完成就返回结果
-			item = submit.get(problem.getTimeLimit() + 2, TimeUnit.MILLISECONDS);
+			item = submit.get(task.getTimeLimit() + 2, TimeUnit.MILLISECONDS);
 
 			// 针对测试用例，代码运行超时，强行关闭这个测试用例线程
 			if (item == null) {
@@ -179,7 +179,7 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 		item.setUseMemory(endMemory - beginMemory);
 		item.setInputFilePath(inputFilePath);
 		//与实际使用的内存和题目规定的内存限制比较
-		if (item.getUseMemory() > problem.getMemoryLimit()) {
+		if (item.getUseMemory() > task.getMemoryLimit()) {
 			item.setNormal(false);
 			item.setMessage("超出内存限制");
 		}
@@ -216,11 +216,11 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 
 	}
 
-	public Problem getProblem() {
-		return problem;
+	public Task getTask() {
+		return task;
 	}
 
-	public void setProblem(Problem problem) {
-		this.problem = problem;
+	public void setTask(Task task) {
+		this.task = task;
 	}
 }

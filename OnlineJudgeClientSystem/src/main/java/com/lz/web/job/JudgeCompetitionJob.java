@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.lz.system.service.JavaSandboxService;
+import com.lz.system.service.EvaluationMachineService;
 import com.lz.system.service.dto.JudgeProblemDTO;
 import com.lz.system.service.dto.ProblemJudgeResult;
 import com.lz.system.service.dto.ProblemJudgeResultItem;
@@ -116,7 +116,7 @@ public class JudgeCompetitionJob implements Runnable, Serializable {
 			if (codeFiles.length == 1) {
 				judgeProblemDTO = new JudgeProblemDTO();
 
-				judgeProblemDTO.setJavaFilePath(codeFiles[0].getAbsolutePath());
+				judgeProblemDTO.setSourceCodeFilePath(codeFiles[0].getAbsolutePath());
 				judgeProblemDTO.setMemoryLimit(problem.getMemoryLimit());
 				judgeProblemDTO.setTimeLimit(problem.getTimeLimit());
 				judgeProblemDTO.setProblemInputPathList(getFileList(problem
@@ -127,7 +127,7 @@ public class JudgeCompetitionJob implements Runnable, Serializable {
 						+ UUIDUtil.getUUID());
 				judgeProblemDTO.setEvaluationResultHandler(listener);
 
-				JavaSandboxService.getInstance().commitJudgementRequest(judgeProblemDTO,
+				EvaluationMachineService.getInstance().commitEvaluationRequest(judgeProblemDTO,
 						null);
 			}
 		}
@@ -147,7 +147,7 @@ public class JudgeCompetitionJob implements Runnable, Serializable {
 	}
 
 	private class JobEvaluationResultHandler implements
-			JavaSandboxService.EvaluationResultHandler {
+			EvaluationMachineService.EvaluationResultHandler {
 		// 表示一共要等待多少道题目的判题结果出来了，才能组织完这个人一共的做题信息
 		private int waitCodeResultCount = 0;
 		private int sloveCodeResultCount = 0;

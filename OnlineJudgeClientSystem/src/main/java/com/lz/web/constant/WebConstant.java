@@ -21,5 +21,5 @@ public class WebConstant {
     /**
      * 提交的源代码保存在服务器上文件的后缀名
      */
-    public static final String DEFAULT_CODE_FILE_SUFFIX = ".java";
+    public static final String SOURCE_CODE_FILE_SUFFIX = ".java";
 }

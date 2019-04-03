@@ -3,7 +3,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 import com.lz.system.sandbox.constant.CommunicationSignal;
-import com.lz.system.sandbox.dto.Problem;
+import com.lz.system.sandbox.dto.Task;
 import com.lz.system.sandbox.dto.Request;
 
 
@@ -37,12 +37,12 @@ public class TestSandbox {
 				request.setCommand(CommunicationSignal.RequestSignal.CLOSE_SANDBOX);
 			} else if (i == 2) {
 				request.setCommand(CommunicationSignal.RequestSignal.REQUSET_JUDGED_PROBLEM);
-				Problem problem = new Problem();
-				problem.setRunId("1111111111111");
-				problem.setClassFileName("Main");
-				problem.setTimeLimit(1000);
-				problem.setMemoryLimit(1024 * 1024 * 60);
-				problem.setInputDataFilePathList(Arrays
+				Task task = new Task();
+				task.setRunId("1111111111111");
+				task.setClassFileName("Main");
+				task.setTimeLimit(1000);
+				task.setMemoryLimit(1024 * 1024 * 60);
+				task.setInputDataFilePathList(Arrays
 						.asList("C:\\Users\\john\\Desktop\\problem\\兰顿蚂蚁\\in\\input1.txt",
 								"C:\\Users\\john\\Desktop\\problem\\兰顿蚂蚁\\in\\input2.txt",
 								"C:\\Users\\john\\Desktop\\problem\\兰顿蚂蚁\\in\\input3.txt",

@@ -1,4 +1,4 @@
-package com.lz.sandbox.core;
+package com.lz.machine.core;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,26 +19,21 @@ import java.util.concurrent.ThreadFactory;
 
 import com.google.gson.Gson;
 
-import com.lz.sandbox.callable.ProblemCallable;
-import com.lz.sandbox.constant.CommunicationSignal;
-import com.lz.sandbox.constant.ConstantParameter;
-import com.lz.sandbox.core.classLoader.SandboxClassLoader;
-import com.lz.sandbox.core.securityManager.SandboxSecurityManager;
-import com.lz.sandbox.core.systemInStream.ThreadInputStream;
-import com.lz.sandbox.core.systemOutStream.CacheOutputStream;
-import com.lz.sandbox.dto.Problem;
-import com.lz.sandbox.dto.ProblemResult;
-import com.lz.sandbox.dto.ProblemResultItem;
-import com.lz.sandbox.dto.Request;
-import com.lz.sandbox.dto.Response;
-import com.lz.sandbox.dto.SandBoxStatus;
-import com.lz.sandbox.dto.SandboxInitData;
+import com.lz.machine.callable.ProblemCallable;
+import com.lz.machine.constant.CommunicationSignal;
+import com.lz.machine.constant.ConstantParameter;
+import com.lz.machine.core.classLoader.SandboxClassLoader;
+import com.lz.machine.core.securityManager.SandboxSecurityManager;
+import com.lz.machine.core.systemInStream.ThreadInputStream;
+import com.lz.machine.core.systemOutStream.CacheOutputStream;
+import com.lz.machine.dto.*;
+import com.lz.machine.dto.Task;
 
 /**
  * 测评机
  * @author 刘铮
  */
-public class Sandbox {
+public class EvaluationMachine {
 	/**
 	 * 每加载超过5个类后，就替换一个新的ClassLoader
 	 */
@@ -51,9 +46,13 @@ public class Sandbox {
 	private String pid = null;
 
 	/**
-	 * 与前台通信的Socker实例对象
+	 * 与前台通信的Socket实例对象
 	 */
 	private ServerSocket serverSocket;
+
+	/**
+	 * 客户端的Socket
+	 */
 	private Socket communicateSocket;
 	private SandboxClassLoader sandboxClassLoader;
 	private Gson gson = null;
@@ -124,10 +123,10 @@ public class Sandbox {
 			});
 
 	public static void main(String[] args) {
-		new Sandbox(args);
+		new EvaluationMachine(args);
 	}
 
-	private Sandbox(String[] args) {
+	private EvaluationMachine(String[] args) {
 		initSandbox(args);
 	}
 
@@ -179,7 +178,7 @@ public class Sandbox {
 
 		try {
 			serverSocket = new ServerSocket(port);
-			System.out.println("sandbox" + port + "wait");
+			System.out.println("machine" + port + "wait");
 			communicateSocket = serverSocket.accept();
 			System.out.println("pid:" + pid);
 			// 只与外部建立一个沟通的连接
@@ -238,9 +237,9 @@ public class Sandbox {
 	 */
 	private void dispatchRequest(Request request) throws IOException {
 		if (CommunicationSignal.RequestSignal.CLOSE_SANDBOX.equals(request.getCommand())) {
-			closeSandboxService(request.getSignalId());
+			closeSandboxService(request.getRequestId());
 		} else if (CommunicationSignal.RequestSignal.SANDBOX_STATUS.equals(request.getCommand())) {
-			feedbackSandboxStatusService(request.getSignalId());
+			feedbackSandboxStatusService(request.getRequestId());
 		} else if (CommunicationSignal.RequestSignal.REQUSET_JUDGED_PROBLEM.equals(request.getCommand())) {
 			// 防止内存使用过多
 			if (loadedClassCount >= UPDATE_CLASSLOADER_GAP) {
@@ -249,11 +248,11 @@ public class Sandbox {
 				sandboxClassLoader = new SandboxClassLoader(sandboxInitData.getClassFileRootPath());
 				System.gc();
 			}
-			Future<List<ProblemResultItem>> processProblem = processProblem(request.getData());
-			responseEvaluationResult(request.getSignalId(), processProblem);
+			Future<List<ProblemResultItem>> processProblem = processProblem(request.getTask());
+			responseEvaluationResult(request.getRequestId(), processProblem);
 			loadedClassCount++;
 		} else if (CommunicationSignal.RequestSignal.IS_BUSY.equals(request.getCommand())) {
-			checkBusy(request.getSignalId());
+			checkBusy(request.getRequestId());
 		}
 	}
 
@@ -297,20 +296,20 @@ public class Sandbox {
 
 	/**
 	 * 进行任务处理
-	 * @param problemJson 题目内容的JSON格式
+	 * @param taskJson 题目内容的JSON格式
 	 * @return 题目处理结果
 	 */
-	private Future<List<ProblemResultItem>> processProblem(String problemJson) {
-		Problem problem = gson.fromJson(problemJson, Problem.class);
+	private Future<List<ProblemResultItem>> processProblem(String taskJson) {
+		Task task = gson.fromJson(taskJson, Task.class);
 		try {
-			Class<?> mainClass = sandboxClassLoader.loadSandboxClass(problem.getClassFileName());
+			Class<?> mainClass = sandboxClassLoader.loadSandboxClass(task.getClassFileName());
 			Method mainMethod = mainClass.getMethod("main", String[].class);
 			if (!Modifier.isStatic(mainMethod.getModifiers())) {
 				throw new Exception("main方法不是静态方法");
 			}
 
 			mainMethod.setAccessible(true);
-			problemCallable = new ProblemCallable(mainMethod, problem, resultBuffer, systemThreadIn);
+			problemCallable = new ProblemCallable(mainMethod, task, resultBuffer, systemThreadIn);
 			Future<List<ProblemResultItem>> submit = problemThreadPool.submit(problemCallable);
 			isBusy = true;
 			mainClass = null;
@@ -356,9 +355,9 @@ public class Sandbox {
 				}
 				try {
 					List<ProblemResultItem> resultItems = processProblem.get();
-					Problem problem = problemCallable.getProblem();
+					Task task = problemCallable.getTask();
 					ProblemResult problemResult = new ProblemResult();
-					problemResult.setRunId(problem.getRunId());
+					problemResult.setRunId(task.getRunId());
 					problemResult.setResultItems(resultItems);
 
 					response(signalId, CommunicationSignal.ResponseSignal.OK,

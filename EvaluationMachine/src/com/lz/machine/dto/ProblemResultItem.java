@@ -1,4 +1,4 @@
-package com.lz.sandbox.dto;
+package com.lz.machine.dto;
 
 /**
  * 根据一个测试用例的代码测评结果

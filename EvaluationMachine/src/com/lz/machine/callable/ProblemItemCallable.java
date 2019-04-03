@@ -1,4 +1,4 @@
-package com.lz.sandbox.callable;
+package com.lz.machine.callable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,9 +7,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 
-import com.lz.sandbox.core.systemInStream.ThreadInputStream;
-import com.lz.sandbox.core.systemOutStream.CacheOutputStream;
-import com.lz.sandbox.dto.ProblemResultItem;
+import com.lz.machine.core.systemInStream.ThreadInputStream;
+import com.lz.machine.core.systemOutStream.CacheOutputStream;
+import com.lz.machine.dto.ProblemResultItem;
 
 /**
  * 这个类里面的call()方法会运行用户提交的代码。

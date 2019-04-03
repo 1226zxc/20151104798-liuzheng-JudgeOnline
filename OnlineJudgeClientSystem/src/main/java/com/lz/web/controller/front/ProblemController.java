@@ -107,12 +107,13 @@ public class ProblemController extends PageController<Problem, Problem, ProblemR
     @RequestMapping(value = "/submitAnswer", method = RequestMethod.POST)
     @ResponseBody
     public ResponseMap submitAnswer(HttpSession session, @Valid ProblemAnswerVO problemAnswerVO) {
-        Long nextSubmitTime = (Long) session.getAttribute(ConstantParameter.SUBMIT_RECORD_TOKEN_NAME);
+        Long nextSubmitTime = (Long) session.getAttribute(ConstantParameter.NEXT_SUBMIT_RECORD_TIME);
 
         // 如果为空，就表明是第一次提交
         if (nextSubmitTime != null) {
             if (nextSubmitTime > System.currentTimeMillis()) {
-                throw new ServiceLogicException("请" + TimeUnit.MILLISECONDS.toSeconds(nextSubmitTime - System.currentTimeMillis()) + "秒后再提交代码");
+                throw new ServiceLogicException("请" + TimeUnit.MILLISECONDS.toSeconds(
+                        nextSubmitTime - System.currentTimeMillis()) + "秒后再提交代码");
             }
         }
 
@@ -122,8 +123,8 @@ public class ProblemController extends PageController<Problem, Problem, ProblemR
         dto.setUser(user);
         answerSubmitService.submitAnswer(dto);
         // 5秒后才能允许再一次提交代码
-        session.setAttribute(ConstantParameter.SUBMIT_RECORD_TOKEN_NAME, System.currentTimeMillis() + ConstantParameter.SUBMIT_RECORD_GAP);
-        // TODO 返回个人历史提交显示页面
+        session.setAttribute(ConstantParameter.NEXT_SUBMIT_RECORD_TIME,
+                System.currentTimeMillis() + ConstantParameter.SUBMIT_RECORD_GAP);
         return new ResponseMap().buildSucessResponse();
     }
 

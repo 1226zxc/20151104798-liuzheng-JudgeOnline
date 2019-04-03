@@ -1,4 +1,4 @@
-package com.lz.sandbox.dto;
+package com.lz.machine.dto;
 
 import java.util.ArrayList;
 import java.util.List;

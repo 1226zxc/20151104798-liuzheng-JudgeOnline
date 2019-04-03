@@ -1,4 +1,4 @@
-package com.lz.sandbox.dto;
+package com.lz.machine.dto;
 
 /**
  * 保存的是从前台发送过来的数据，包括
@@ -13,8 +13,8 @@ public class Request {
 	/**
 	 * 保存了提交的JSON格式的代码
 	 */
-	private String data;
-	private String signalId;
+	private String task;
+	private String requestId;
 
 	public String getCommand() {
 		return command;
@@ -24,20 +24,20 @@ public class Request {
 		this.command = command;
 	}
 
-	public String getData() {
-		return data;
+	public String getTask() {
+		return task;
 	}
 
-	public void setData(String data) {
-		this.data = data;
+	public void setTask(String task) {
+		this.task = task;
 	}
 
-	public String getSignalId() {
-		return signalId;
+	public String getRequestId() {
+		return requestId;
 	}
 
-	public void setSignalId(String signalId) {
-		this.signalId = signalId;
+	public void setRequestId(String requestId) {
+		this.requestId = requestId;
 	}
 
 }

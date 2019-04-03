@@ -40,7 +40,7 @@ public class CommunicatorManager {
 	/**
 	 * 判题请求队列，保存着未处理的判题任务
 	 */
-	private BlockingQueue<JudgeProblemRequest> problemRequests = new LinkedBlockingQueue<JudgeProblemRequest>();
+	private BlockingQueue<JudgeProblemRequest> problemRequests = new LinkedBlockingQueue<>(16);
 	private BlockingQueue<JudgeProblemRequest> highPriorityProblemRequests = new LinkedBlockingQueue<JudgeProblemRequest>();
 
 	/**
@@ -249,7 +249,7 @@ public class CommunicatorManager {
 	 * 向判题请求阻塞队列中添加一个判题请求
 	 * @param problemRequest 本次判题请求
 	 */
-	public void addJudgeProblemRequest(JudgeProblemRequest problemRequest) {
+	public void addEvaluationRequest(JudgeProblemRequest problemRequest) {
 		problemRequests.add(problemRequest);
 	}
 

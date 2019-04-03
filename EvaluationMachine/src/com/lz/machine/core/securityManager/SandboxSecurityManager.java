@@ -1,4 +1,4 @@
-package com.lz.sandbox.core.securityManager;
+package com.lz.machine.core.securityManager;
 
 import java.io.FilePermission;
 import java.lang.reflect.ReflectPermission;
@@ -7,7 +7,7 @@ import java.security.SecurityPermission;
 import java.util.PropertyPermission;
 import java.util.logging.LoggingPermission;
 
-import com.lz.sandbox.constant.ConstantParameter;
+import com.lz.machine.constant.ConstantParameter;
 
 public class SandboxSecurityManager extends SecurityManager {
 	/**

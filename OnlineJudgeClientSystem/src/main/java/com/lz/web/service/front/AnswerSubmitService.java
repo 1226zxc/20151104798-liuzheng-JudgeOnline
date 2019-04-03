@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.lz.system.service.JavaSandboxService;
+import com.lz.system.service.EvaluationMachineService;
 import com.lz.system.service.dto.JudgeProblemDTO;
 import com.lz.system.service.dto.ProblemJudgeResult;
 import com.lz.system.service.dto.ProblemJudgeResultItem;
@@ -34,19 +34,23 @@ import com.lz.util.JsonUtil;
 import com.lz.util.Log4JUtil;
 import com.lz.util.UUIDUtil;
 
+/**
+ * 提交的代码逻辑处理
+ *
+ * @author 刘铮
+ */
 @Service
 public class AnswerSubmitService {
-	@Autowired
 	private SubmitRecordDao submitRecordDao;
-	@Autowired
+
 	private ProblemDao problemDao;
-	@Autowired
+
 	private UserDao userDao;
 
 	/**
 	 * 测评机服务对象，单例。
 	 */
-	private JavaSandboxService javaSandboxService;
+	private EvaluationMachineService evaluationMachineService;
 
 	/**
 	 * 包名的命名规范正则匹配表达式
@@ -64,7 +68,7 @@ public class AnswerSubmitService {
 	private Pattern mainMethodPattern = Pattern.compile("public[ ]*static[ ]*void[ ]*main");
 
 	public AnswerSubmitService() {
-		javaSandboxService = JavaSandboxService.getInstance();
+		evaluationMachineService = EvaluationMachineService.getInstance();
 	}
 
 	/**
@@ -77,13 +81,12 @@ public class AnswerSubmitService {
 	public void submitAnswer(ProblemAnswerDTO dto) {
 		// 验证代码的规范性
 		checkCodeStandard(dto.getCode());
-
 		User user = dto.getUser();
 		// 组拼java文件名，并修改里面的主类名
 		// u用户ID:时间毫秒值
 		String javaFileName = "u" + dto.getUser().getUserId() + "_" + System.currentTimeMillis() + "Main";
 		// 替换主类名为文件名
-		String code = dto.getCode().replace("Main", javaFileName);
+		String sourceCode = dto.getCode().replace("Main", javaFileName);
 
 		// 创建当天的代码提交文件夹
 		String today = DateUtil.getYYYYMMddToday();
@@ -95,18 +98,18 @@ public class AnswerSubmitService {
 		}
 
 		FileOutputStream outputStream = null;
-		String javaFilePath = dir.getAbsolutePath() + File.separator + javaFileName +
-				WebConstant.DEFAULT_CODE_FILE_SUFFIX;
+		String sourceCodeFilePath = dir.getAbsolutePath() + File.separator + javaFileName +
+				WebConstant.SOURCE_CODE_FILE_SUFFIX;
 		try {
-			outputStream = new FileOutputStream(javaFilePath);
-			outputStream.write(code.getBytes());
+			outputStream = new FileOutputStream(sourceCodeFilePath);
+			outputStream.write(sourceCode.getBytes());
 
 			SubmitRecord record = new SubmitRecord();
 			record.setIsAccepted(false);
 			record.setCodeLanguage(dto.getCodeLanguage());
-			record.setCodeFilePath(javaFilePath);
+			record.setCodeFilePath(sourceCodeFilePath);
 			record.setDetails("编译运行中");
-			record.setScore(new Double(0));
+			record.setScore((double) 0);
 			record.setSubmitProblemId(dto.getSubmitProblemId());
 			record.setSubmitTime(new Date());
 			record.setSubmitUserId(user.getUserId());
@@ -114,13 +117,15 @@ public class AnswerSubmitService {
 			submitRecordDao.add(record);
 
 			// 发布判题请求
-			sendAnswerToJudge(dto, javaFilePath, record);
+			this.sendAnswerToJudge(dto, sourceCodeFilePath, record);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException("创建文件失败，无法保存用户代码");
 		} finally {
 			try {
-				outputStream.close();
+				if (outputStream != null) {
+					outputStream.close();
+				}
 			} catch (IOException e) {
 
 			}
@@ -157,14 +162,14 @@ public class AnswerSubmitService {
 	 * - 源代码路径
 	 * - 测试用例输入输出文件路径
 	 * @param dto 提交的答案信息
-	 * @param javaFilePath 提交的源代码路径
+	 * @param sourceCodeFilePath 提交的源代码路径
 	 * @param record
 	 */
-	private void sendAnswerToJudge(ProblemAnswerDTO dto, String javaFilePath, final SubmitRecord record) {
+	private void sendAnswerToJudge(ProblemAnswerDTO dto, String sourceCodeFilePath, final SubmitRecord record) {
 		// 先查询出，题目相关要求
 		Problem problem = problemDao.findById(dto.getSubmitProblemId());
 		JudgeProblemDTO judgeProblemDTO = new JudgeProblemDTO();
-		judgeProblemDTO.setJavaFilePath(javaFilePath);
+		judgeProblemDTO.setSourceCodeFilePath(sourceCodeFilePath);
 		judgeProblemDTO.setMemoryLimit(problem.getMemoryLimit());
 		judgeProblemDTO.setTimeLimit(problem.getTimeLimit());
 		judgeProblemDTO.setRunId(UUIDUtil.getUUID());
@@ -174,12 +179,11 @@ public class AnswerSubmitService {
 		List<String> outputPaths = getFileList(problem.getOutputFileRootPath());
 		judgeProblemDTO.setProblemInputPathList(inputPaths);
 		judgeProblemDTO.setProblemOutputPathList(outputPaths);
-		judgeProblemDTO.setEvaluationResultHandler(
-				new EvaluationResultHandler(record.getSubmitRecordTableName(),
+		judgeProblemDTO.setEvaluationResultHandler(new EvaluationResultHandler(record.getSubmitRecordTableName(),
 						record.getSubmitId(), dto.getUser().getUserId(), problem));
 
-		// 开始提交判题任务
-		javaSandboxService.commitJudgementRequest(judgeProblemDTO, new JavaSandboxService.ErrorListener() {
+		// 开始提交判题请求，触发多线程提交
+		evaluationMachineService.commitEvaluationRequest(judgeProblemDTO, new EvaluationMachineService.ErrorListener() {
 			@Override
 			public void onError(Exception exception) {
 				record.setDetails(exception.getMessage());
@@ -204,7 +208,10 @@ public class AnswerSubmitService {
 		return inputPaths;
 	}
 
-	private class EvaluationResultHandler implements JavaSandboxService.EvaluationResultHandler {
+	private class EvaluationResultHandler implements EvaluationMachineService.EvaluationResultHandler {
+		/**
+		 * 提交记录的表号，直到测评结束才开始写入数据库
+		 */
 		private String submitRecordTableName;
 		private BigInteger submitRecordId;
 		private Integer userId;
@@ -265,6 +272,20 @@ public class AnswerSubmitService {
 
 			submitRecordDao.update(record);
 		}
+	}
+	@Autowired
+	public void setSubmitRecordDao(SubmitRecordDao submitRecordDao) {
+		this.submitRecordDao = submitRecordDao;
+	}
+
+	@Autowired
+	public void setProblemDao(ProblemDao problemDao) {
+		this.problemDao = problemDao;
+	}
+
+	@Autowired
+	public void setUserDao(UserDao userDao) {
+		this.userDao = userDao;
 	}
 }
 
