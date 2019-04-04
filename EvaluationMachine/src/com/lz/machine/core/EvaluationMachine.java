@@ -19,10 +19,10 @@ import java.util.concurrent.ThreadFactory;
 
 import com.google.gson.Gson;
 
-import com.lz.machine.callable.ProblemCallable;
+import com.lz.machine.callable.TaskCallable;
 import com.lz.machine.constant.CommunicationSignal;
 import com.lz.machine.constant.ConstantParameter;
-import com.lz.machine.core.classLoader.SandboxClassLoader;
+import com.lz.machine.core.classLoader.EvaluationClassLoader;
 import com.lz.machine.core.securityManager.SandboxSecurityManager;
 import com.lz.machine.core.systemInStream.ThreadInputStream;
 import com.lz.machine.core.systemOutStream.CacheOutputStream;
@@ -33,6 +33,7 @@ import com.lz.machine.dto.Task;
  * 测评机
  * @author 刘铮
  */
+@SuppressWarnings("Duplicates")
 public class EvaluationMachine {
 	/**
 	 * 每加载超过5个类后，就替换一个新的ClassLoader
@@ -54,7 +55,7 @@ public class EvaluationMachine {
 	 * 客户端的Socket
 	 */
 	private Socket communicateSocket;
-	private SandboxClassLoader sandboxClassLoader;
+	private EvaluationClassLoader evaluationClassLoader;
 	private Gson gson = null;
 	/**
 	 * 管理JVM内存的MXbean
@@ -69,7 +70,7 @@ public class EvaluationMachine {
 	/**
 	 * 一个题目的处理规则
 	 */
-	private ProblemCallable problemCallable;
+	private TaskCallable taskCallable;
 
 	/**
 	 * 所有代码的所有运行结果都将保存在内存里
@@ -84,11 +85,11 @@ public class EvaluationMachine {
 	/**
 	 * 用一个线程池去处理每个判题请求，这种线程池是单线程，保证所有任务按顺序执行(FIFO,LIFO,优先级)
 	 */
-	private ExecutorService problemThreadPool = Executors.newSingleThreadExecutor(new ThreadFactory() {
+	private ExecutorService taskThreadPool = Executors.newSingleThreadExecutor(new ThreadFactory() {
 				@Override
 				public Thread newThread(Runnable r) {
 					Thread thread = new Thread(r);
-					thread.setName("problemThreadPool");
+					thread.setName("taskThreadPool");
 					thread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 						@Override
 						public void uncaughtException(Thread t, Throwable e) {
@@ -103,18 +104,15 @@ public class EvaluationMachine {
 	/**
 	 * 用一个线程池去等待每个判题请求的结果返回
 	 */
-	private ExecutorService problemResultThreadPool = Executors
-			.newSingleThreadExecutor(new ThreadFactory() {
-
+	private ExecutorService taskResultThreadPool = Executors.newSingleThreadExecutor(new ThreadFactory() {
 				@Override
 				public Thread newThread(Runnable r) {
 					Thread thread = new Thread(r);
-					thread.setName("problemResultThreadPool");
+					thread.setName("taskResultThreadPool");
 					thread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 						@Override
 						public void uncaughtException(Thread t, Throwable e) {
-							response(null,
-									CommunicationSignal.ResponseSignal.ERROR,
+							response(null, CommunicationSignal.ResponseSignal.ERROR,
 									null, e.getMessage());
 						}
 					});
@@ -194,7 +192,7 @@ public class EvaluationMachine {
 	 * @param sandboxInitData 测评机初始化信息
 	 */
 	private void buildEnvironment(SandboxInitData sandboxInitData) {
-		sandboxClassLoader = new SandboxClassLoader(sandboxInitData.getClassFileRootPath());
+		evaluationClassLoader = new EvaluationClassLoader(sandboxInitData.getClassFileRootPath());
 		beginStartTime = System.currentTimeMillis();
 		// 重定向输出流，此后程序中的所有运行结果都打印到内存中
 		System.setOut(new PrintStream(resultBuffer));
@@ -245,11 +243,11 @@ public class EvaluationMachine {
 			if (loadedClassCount >= UPDATE_CLASSLOADER_GAP) {
 				loadedClassCount = 0;
 				// 重置类加载器，使得原有已经加载进内存的过期的类，可以得以释放
-				sandboxClassLoader = new SandboxClassLoader(sandboxInitData.getClassFileRootPath());
+				evaluationClassLoader = new EvaluationClassLoader(sandboxInitData.getClassFileRootPath());
 				System.gc();
 			}
-			Future<List<ProblemResultItem>> processProblem = processProblem(request.getTask());
-			responseEvaluationResult(request.getRequestId(), processProblem);
+			Future<List<TaskItemResult>> taskResult = processTask(request.getTask());
+			responseEvaluationResult(request.getRequestId(), taskResult);
 			loadedClassCount++;
 		} else if (CommunicationSignal.RequestSignal.IS_BUSY.equals(request.getCommand())) {
 			checkBusy(request.getRequestId());
@@ -295,31 +293,32 @@ public class EvaluationMachine {
 	}
 
 	/**
-	 * 进行任务处理
+	 * 开始进行任务处理
 	 * @param taskJson 题目内容的JSON格式
 	 * @return 题目处理结果
 	 */
-	private Future<List<ProblemResultItem>> processProblem(String taskJson) {
+	private Future<List<TaskItemResult>> processTask(String taskJson) {
 		Task task = gson.fromJson(taskJson, Task.class);
 		try {
-			Class<?> mainClass = sandboxClassLoader.loadSandboxClass(task.getClassFileName());
+			Class<?> mainClass = evaluationClassLoader.loadTargetClass(task.getClassFileName());
 			Method mainMethod = mainClass.getMethod("main", String[].class);
 			if (!Modifier.isStatic(mainMethod.getModifiers())) {
 				throw new Exception("main方法不是静态方法");
 			}
 
+			// 给主方法设置可以访问的标志。主方法肯定是public权限
+			// 所以肯定是能被访问的。这里设置的意义就在于能提高运行
+			// 的效率。因为这样设置，底层就关闭了Java语言访问检查的机制
 			mainMethod.setAccessible(true);
-			problemCallable = new ProblemCallable(mainMethod, task, resultBuffer, systemThreadIn);
-			Future<List<ProblemResultItem>> submit = problemThreadPool.submit(problemCallable);
+			taskCallable = new TaskCallable(mainMethod, task, resultBuffer, systemThreadIn);
+			Future<List<TaskItemResult>> submit = taskThreadPool.submit(taskCallable);
 			isBusy = true;
 			mainClass = null;
 			return submit;
 		} catch (ClassNotFoundException e) {
-			response(null, CommunicationSignal.ResponseSignal.ERROR, null,
-					e.getMessage());
+			response(null, CommunicationSignal.ResponseSignal.ERROR, null, e.getMessage());
 		} catch (Exception e) {
-			response(null, CommunicationSignal.ResponseSignal.ERROR, null,
-					e.getMessage());
+			response(null, CommunicationSignal.ResponseSignal.ERROR, null, e.getMessage());
 		}
 		return null;
 	}
@@ -344,27 +343,28 @@ public class EvaluationMachine {
 	/**
 	 * 返回题目运行结果
 	 * @param signalId 信号
-	 * @param processProblem 题目运行结果
+	 * @param taskResult 题目运行结果
 	 */
-	private void responseEvaluationResult(final String signalId, final Future<List<ProblemResultItem>> processProblem) {
-		problemResultThreadPool.execute(new Runnable() {
+	private void responseEvaluationResult(final String signalId, final Future<List<TaskItemResult>> taskResult) {
+		taskResultThreadPool.execute(new Runnable() {
 			@Override
 			public void run() {
-				if (processProblem == null) {
+				if (taskResult == null) {
 					return;
 				}
 				try {
-					List<ProblemResultItem> resultItems = processProblem.get();
-					Task task = problemCallable.getTask();
-					ProblemResult problemResult = new ProblemResult();
-					problemResult.setRunId(task.getRunId());
-					problemResult.setResultItems(resultItems);
+					List<TaskItemResult> resultItems = taskResult.get();
+					Task task = taskCallable.getTask();
+					TaskResult taskResult = new TaskResult();
+					taskResult.setRunId(task.getRunId());
+					taskResult.setResultItems(resultItems);
 
 					response(signalId, CommunicationSignal.ResponseSignal.OK,
 							CommunicationSignal.RequestSignal.REQUSET_JUDGED_PROBLEM,
-							gson.toJson(problemResult));
+							gson.toJson(taskResult));
+
 					isBusy = false;
-					problemCallable = null;
+					taskCallable = null;
 
 					// 通知对方，主动告诉对方，自己已经空闲了，已经准备好下一次判题
 					response(null, CommunicationSignal.ResponseSignal.IDLE, null, null);
@@ -378,17 +378,16 @@ public class EvaluationMachine {
 
 	/**
 	 * 发送回复
-	 * @param signalId 信号
+	 * @param requestId 信号
 	 * @param responseCommand 回复的命令
 	 * @param requestCommand 请求的命令
 	 * @param data 数据
 	 */
-	private void response(String signalId, String responseCommand,
-						  String requestCommand, String data) {
+	private void response(String requestId, String responseCommand, String requestCommand, String data) {
 		try {
 			OutputStream outputStream = communicateSocket.getOutputStream();
 			Response response = new Response();
-			response.setSignalId(signalId);
+			response.setRequestId(requestId);
 			response.setResponseCommand(responseCommand);
 			response.setRequestCommand(requestCommand);
 			response.setData(data);

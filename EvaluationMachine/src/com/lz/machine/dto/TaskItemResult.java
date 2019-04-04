@@ -4,7 +4,7 @@ package com.lz.machine.dto;
  * 根据一个测试用例的代码测评结果
  * 包括使用时间、使用内存量、结果、信息等等
  */
-public class ProblemResultItem {
+public class TaskItemResult {
 	private long useTime;
 	private long useMemory;
 
@@ -75,7 +75,7 @@ public class ProblemResultItem {
 
 	@Override
 	public String toString() {
-		return "ProblemResultItem [useTime=" + useTime + ", useMemory="
+		return "TaskItemResult [useTime=" + useTime + ", useMemory="
 				+ useMemory + ", result=" + result + ", message=" + message
 				+ ", isNormal=" + isNormal + ", inputFilePath=" + inputFilePath
 				+ "]";

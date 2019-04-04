@@ -52,10 +52,8 @@ public class EvaluationMachineService {
 	private Map<String, SandboxStatus> sandboxStatusMap = new ConcurrentHashMap<String, SandboxStatus>();
 	private static volatile EvaluationMachineService evaluationMachineService;
 	private List<SandboxStatusObserver> sandboxStatusObservers = new CopyOnWriteArrayList<SandboxStatusObserver>();
-	private ScheduledExecutorService statusTimer = Executors
-			.newScheduledThreadPool(1, ThreadFactoryUtil
-					.getLogThreadFactory(EvaluationMachineService.class.getName()
-							+ " statusTimer"));
+	private ScheduledExecutorService statusTimer = Executors.newScheduledThreadPool(1,
+			ThreadFactoryUtil.getLogThreadFactory(EvaluationMachineService.class.getName() + " statusTimer"));
 	/**
 	 * 执行判题任务的线程池
 	 */
@@ -149,7 +147,7 @@ public class EvaluationMachineService {
 				sandboxStartInfo.setProblemClassFileRootPath("\"" + ConstantParameter.CLASS_FILE_ROOT_PATH + "\"");
 				try {
 					sandboxStartInfo.setJarFilePath(ResourceUtils.getFile(ResourceUtils
-							.CLASSPATH_URL_PREFIX + "sandbox/EvaluationMachine.jar").getAbsolutePath());
+							.CLASSPATH_URL_PREFIX + "machine/EvaluationMachine.jar").getAbsolutePath());
 				} catch (FileNotFoundException e) {
 					Log4JUtil.logError(e);
 					return;
@@ -181,7 +179,7 @@ public class EvaluationMachineService {
 				try {
 					sandboxStartInfo.setJarFilePath(ResourceUtils.getFile(
 							ResourceUtils.CLASSPATH_URL_PREFIX
-									+ "sandbox/EvaluationMachine.jar")
+									+ "machine/EvaluationMachine.jar")
 							.getAbsolutePath());
 				} catch (FileNotFoundException e) {
 					Log4JUtil.logError(e);

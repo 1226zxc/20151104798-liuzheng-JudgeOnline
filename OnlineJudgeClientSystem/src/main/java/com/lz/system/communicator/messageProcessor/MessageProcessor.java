@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -45,13 +46,9 @@ public class MessageProcessor {
 	private EvaluationMachineHandler machineHandler;
 
 	public MessageProcessor(InputStream receiver, OutputStream transmitter) {
-		try {
-			this.receiver = new Scanner(new InputStreamReader(receiver, "UTF-8"));
-			this.transmitter = transmitter;
-			init();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
+		this.receiver = new Scanner(new InputStreamReader(receiver, StandardCharsets.UTF_8));
+		this.transmitter = transmitter;
+		init();
 	}
 
 	private void init() {
@@ -86,7 +83,7 @@ public class MessageProcessor {
 					} else if (CommunicationSignal.ResponseSignal.ERROR.equals(response.getResponseCommand())) {
 						Log4JUtil.logError(new RuntimeException(response.getData()));
 					} else {
-						ResponseExecutor commandExecutor = responseExecutors.remove(response.getSignalId());
+						ResponseExecutor commandExecutor = responseExecutors.remove(response.getRequestId());
 						if (commandExecutor != null) {
 							commandExecutor.execute(response);
 						}

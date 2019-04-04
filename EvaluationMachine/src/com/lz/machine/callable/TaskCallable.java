@@ -18,21 +18,21 @@ import java.util.concurrent.TimeoutException;
 import com.lz.machine.core.systemInStream.ThreadInputStream;
 import com.lz.machine.core.systemOutStream.CacheOutputStream;
 import com.lz.machine.dto.Task;
-import com.lz.machine.dto.ProblemResultItem;
+import com.lz.machine.dto.TaskItemResult;
 
 /**
  * 根据多组测试用例测评代码的线程规则定义类
  *
  * @author 刘铮
  */
-public class ProblemCallable implements Callable<List<ProblemResultItem>> {
+public class TaskCallable implements Callable<List<TaskItemResult>> {
 	/**
-	 * 主方法
+	 * 运行代码的主方法
 	 */
 	private Method mainMethod;
 
 	/**
-	 * 前台传输过来的此问题的限制信息
+	 * 包含此项任务的要求信息
 	 */
 	private Task task;
 	/**
@@ -80,8 +80,8 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 	 * @param resultBuffer   重定向后的标准输出流
 	 * @param threadSystemIn 重定向后的标准输入流
 	 */
-	public ProblemCallable(Method mainMethod, Task task,
-						   CacheOutputStream resultBuffer, ThreadInputStream threadSystemIn) {
+	public TaskCallable(Method mainMethod, Task task,
+						CacheOutputStream resultBuffer, ThreadInputStream threadSystemIn) {
 		this.mainMethod = mainMethod;
 		this.task = task;
 		this.resultBuffer = resultBuffer;
@@ -97,10 +97,10 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 	 * @throws Exception
 	 */
 	@Override
-	public List<ProblemResultItem> call() throws Exception {
+	public List<TaskItemResult> call() throws Exception {
 		// 获取测试用例文件
 		List<String> paths = task.getInputDataFilePathList();
-		final List<ProblemResultItem> resultItems = new ArrayList<ProblemResultItem>();
+		final List<TaskItemResult> resultItems = new ArrayList<TaskItemResult>();
 		//设置计数器，计数值为所有测试用例的个数
 		countDownLatch = new CountDownLatch(paths.size());
 		// 为了内存使用比较准确，先大概的执行一次回收吧
@@ -129,14 +129,14 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 	 * @param inputFilePath 测试数据文件路径
 	 * @return 返回封装了测评结果的ProblemResultItem实例
 	 */
-	private ProblemResultItem process(String inputFilePath) {
-		ProblemResultItem item = null;
+	private TaskItemResult process(String inputFilePath) {
+		TaskItemResult item = null;
 		ProblemItemCallable itemCallable = null;
 		long beginMemory = 0;
 		long beginTime = 0;
 		long endTime = 0;
 		long endMemory = 0;
-		Future<ProblemResultItem> submit = null;
+		Future<TaskItemResult> submit = null;
 
 		try {
 			itemCallable = new ProblemItemCallable(mainMethod, inputFilePath, resultBuffer, threadSystemIn);
@@ -151,7 +151,7 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 
 			// 针对测试用例，代码运行超时，强行关闭这个测试用例线程
 			if (item == null) {
-				killThread((FutureTask<ProblemResultItem>) submit);
+				killThread((FutureTask<TaskItemResult>) submit);
 				throw new TimeoutException();
 			}
 
@@ -161,8 +161,8 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 		} catch (Exception e) {
 			// 出现了意外，先关闭资源再说（如已经打开的流等）
 			itemCallable.colseResource();
-			killThread((FutureTask<ProblemResultItem>) submit);
-			item = new ProblemResultItem();
+			killThread((FutureTask<TaskItemResult>) submit);
+			item = new TaskItemResult();
 			item.setNormal(false);
 			if (e instanceof CancellationException || e instanceof TimeoutException) {
 				// 超时了，会进来这里
@@ -201,7 +201,7 @@ public class ProblemCallable implements Callable<List<ProblemResultItem>> {
 	 * @throws IllegalAccessException
 	 */
 	@SuppressWarnings("deprecation")
-	private void killThread(FutureTask<ProblemResultItem> submit) {
+	private void killThread(FutureTask<TaskItemResult> submit) {
 		try {
 			submit.cancel(true);
 			// 利用反射，强行取出正在运行该任务的线程

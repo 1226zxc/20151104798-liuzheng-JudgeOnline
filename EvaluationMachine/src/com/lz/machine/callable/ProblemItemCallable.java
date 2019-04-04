@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
 
 import com.lz.machine.core.systemInStream.ThreadInputStream;
 import com.lz.machine.core.systemOutStream.CacheOutputStream;
-import com.lz.machine.dto.ProblemResultItem;
+import com.lz.machine.dto.TaskItemResult;
 
 /**
  * 这个类里面的call()方法会运行用户提交的代码。
@@ -21,7 +21,7 @@ import com.lz.machine.dto.ProblemResultItem;
  * 给调用者。提交的代码可能包含键盘输入流，数据来源用户，因此
  * 需要重定向数据输入流，变更为文件输入流。
  */
-public class ProblemItemCallable implements Callable<ProblemResultItem> {
+public class ProblemItemCallable implements Callable<TaskItemResult> {
 	/**
 	 * 代码的主函数入口
 	 */
@@ -67,8 +67,8 @@ public class ProblemItemCallable implements Callable<ProblemResultItem> {
 	 * @throws Exception
      */
 	@Override
-	public ProblemResultItem call() throws Exception {
-		ProblemResultItem item = new ProblemResultItem();
+	public TaskItemResult call() throws Exception {
+		TaskItemResult item = new TaskItemResult();
 		try {
 			// 此测试文件输入流绑定到当前线程里，前面已经做了重定向，这里只需绑定一个测试
 			// 用例文件到当前线程中即可

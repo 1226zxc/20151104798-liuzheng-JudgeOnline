@@ -6,9 +6,9 @@ import java.util.List;
 /**
  * 保存的是运行时id和保存所有结果项的list
  */
-public class ProblemResult {
+public class TaskResult {
 	private String runId;
-	private List<ProblemResultItem> resultItems = new ArrayList<ProblemResultItem>();
+	private List<TaskItemResult> resultItems = new ArrayList<TaskItemResult>();
 
 	public String getRunId() {
 		return runId;
@@ -18,11 +18,11 @@ public class ProblemResult {
 		this.runId = runId;
 	}
 
-	public List<ProblemResultItem> getResultItems() {
+	public List<TaskItemResult> getResultItems() {
 		return resultItems;
 	}
 
-	public void setResultItems(List<ProblemResultItem> resultItems) {
+	public void setResultItems(List<TaskItemResult> resultItems) {
 		this.resultItems = resultItems;
 	}
 
