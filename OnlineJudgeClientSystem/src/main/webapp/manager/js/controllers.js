@@ -46,8 +46,7 @@ managerAppCtrls.filter("timeShow", function() {
 			};
 		});
 
-managerAppCtrls.controller('managerSystemCtr', function($scope, $http,
-				$location) {
+managerAppCtrls.controller('managerSystemCtr', function($scope, $http, $location) {
 	var websocket;
 	var hostPort = $location.host() + ":" + $location.port();
 
@@ -61,17 +60,14 @@ managerAppCtrls.controller('managerSystemCtr', function($scope, $http,
 
 	if ('WebSocket' in window) {
 		console.log("启用WebSocket");
-		websocket = new WebSocket("ws://" + hostPort
-				+ applicationContext + "/manager/OJSystemWebSocketServer");
+		websocket = new WebSocket("ws://" + hostPort + applicationContext + "/manager/OJSystemWebSocketServer");
 	} else if ('MozWebSocket' in window) {
 		console.log("启用MozWebSocket");
-		websocket = new MozWebSocket("ws://" + hostPort
-        		+ applicationContext + "/OJSystemWebSocketServer");
+		websocket = new MozWebSocket("ws://" + hostPort + applicationContext + "/OJSystemWebSocketServer");
 	} else {
 		console.log("启用sockjs");
 		// 模拟过，好像是支持到IE7的
-		websocket = new SockJS("http://" + hostPort
-				+ "manager/sockjs/OJSystemWebSocketServer");
+		websocket = new SockJS("http://" + hostPort + "manager/sockjs/OJSystemWebSocketServer");
 	}
 	websocket.onopen = function(evnt) {
 
@@ -100,396 +96,25 @@ managerAppCtrls.controller('managerSystemCtr', function($scope, $http,
 				function(response) {
 					alert("发送请求成功");
 				});
-	}
+	};
 
 	$scope.closeAll = function() {
 		$http.post("../OJSystemController/closeAllJavaSandbox")
 				.success(function(response) {
 							alert("发送请求成功");
 						});
-	}
+	};
 
 	$scope.closeOne = function(index) {
 		var sandboxStatus = $scope.allSandboxStatus[index];
-		$http
-				.post("../OJSystemController/closeJavaSandboxByIdCard?idCard="
-						+ sandboxStatus.idCard).success(
-						function(response) {
-							alert("发送请求成功");
-						});
+		$http.post("../OJSystemController/closeJavaSandboxByIdCard?idCard="
+					+ sandboxStatus.idCard).success(
+					function(response) {
+						alert("发送请求成功");
+					});
 	}
 
 });// managerSystemCtr
-
-managerAppCtrls.controller('managerCompetitionAccountCtr', function($scope,
-		$http) {
-	$scope.selectedId = -1;
-	$scope.loadCompetition = function() {
-		$http.get("../AdminCompetitionAccountController/getAllCompetitionIds")
-				.success(function(response) {
-							$scope.allCompetitionIds = response.allCompetitionIds;
-						});
-	}
-	$scope.loadCompetition();
-
-	$scope.getAllAccount = function() {
-		var selectedCompetitionId = $("#selectedCompetitionId").val();
-
-		if (selectedCompetitionId == null) {
-			alert("请先选择具体的比赛编号");
-			return;
-		}
-
-		$http.get("../AdminCompetitionAccountController/getCompetitionAccount/"
-				+ selectedCompetitionId).success(function(response) {
-					$scope.allAccounts = response.allAccounts;
-				});
-	}
-
-	$scope.detail = function(index) {
-		$scope.currentDetailObj = $scope.allAccounts[index];
-
-		$("#detailDialog").modal("show");
-	};
-
-	$scope.edit = function(index) {
-		$scope.currentUpdateObj = angular.copy($scope.allAccounts[index]);
-		$scope.currentUpdateObj.index = index;
-		$("#updateDialog").modal("show");
-	};
-
-	$scope.editSubmit = function() {
-		// 用于封装提交的信息
-		var submitData = angular.copy($scope.currentUpdateObj);
-
-		$http({
-					method : "post",
-					data : jQuery.param(submitData),
-					url : "../AdminCompetitionAccountController/update",
-					headers : {
-						"Content-Type" : "application/x-www-form-urlencoded"
-					}
-				}).success(function(data, status, headers, config) {
-					if (data.success) {
-						alert("更新成功");
-						// 更新界面的内容
-						var index = submitData.index;
-						$scope.allAccounts[index] = submitData;
-						$("#updateDialog").modal("hide");
-					}
-				}).error(function(response, status, headers, config) {
-					$scope.error = {};
-					$scope.error = response;
-				});
-	};
-});// managerCompetitionAccountCtr
-
-managerAppCtrls.controller('managerCompetitionCtr', function($scope, $http,
-		$filter, $pageService) {
-	$scope.isLoadingData = true;
-	$scope.isCanPre = false;
-	$scope.isCanNext = false;
-	$scope.page = {
-		currentPage : 1,
-		pageShowCount : 6,
-		datas : null,
-		totalCount : null,
-		totalPage : null
-	}
-
-	// 首次加载数据
-	$pageService.loadingData($scope, $scope.page.currentPage,
-			"../AdminCompetitionController/list");
-
-	$scope.refresh = function() {
-		$pageService.loadingData($scope, $scope.page.currentPage,
-				"../AdminCompetitionController/list");
-		alert("开始刷新数据");
-	}
-
-	$scope.changePage = function(isNext) {
-		$pageService.changePage(isNext, $scope,
-				"../AdminCompetitionController/list")
-	};
-
-	$scope.detail = function(index) {
-		$scope.currentDetailObj = $scope.page.datas[index];
-
-		$("#detailDialog").modal("show");
-	};
-
-	$scope.add = function() {
-		$scope.currentAddObj = {};
-		$scope.currentAddObj.isPublish = false;
-		$scope.currentAddObj.isCanDeclare = false;
-		$("#addDialog").modal("show");
-	};
-
-	$scope.addSubmit = function() {
-		$scope.currentAddObj.competitionBeginTime = $("#currentAddObjCompetitionBeginTime")
-				.val();
-		$scope.currentAddObj.competitionEndTime = $("#currentAddObjCompetitionEndTime")
-				.val();
-		$scope.currentAddObj.competitionApplyBeginTime = $("#currentAddObjCompetitionApplyBeginTime")
-				.val();
-		$scope.currentAddObj.competitionApplyEndTime = $("#currentAddObjCompetitionApplyEndTime")
-				.val();
-		console.log($scope.currentAddObj);
-		$http({
-					method : "post",
-					data : jQuery.param($scope.currentAddObj),
-					url : "../AdminCompetitionController/add",
-					headers : {
-						"Content-Type" : "application/x-www-form-urlencoded"
-					}
-				}).success(function(response) {
-					if (response.success) {
-						alert("添加成功");
-						$("#addDialog").modal("hide");
-					}
-				}).error(function(response) {
-					if (response.message != null) {
-						alert(response.message);
-						return;
-					}
-					alert("添加失败");
-					$scope.error = {};
-					$scope.error = response;
-				});
-	};
-
-	$scope.delete = function(index) {
-		if (confirm("你确定要删除吗？")) {
-			var deleteId = $scope.page.datas[index].competitionId;
-			$http.post("../AdminCompetitionController/delete?id=" + deleteId)
-					.success(function(data, status, headers, config) {
-								if (data.success) {
-									alert("删除成功");
-									$scope.page.datas.splice(index, 1);
-									$scope.page.totalCount--;
-								} else {
-									alert("删除失败");
-								}
-							}).error(
-							function(response, status, headers, config) {
-								alert("删除失败");
-							});
-		}
-	};
-
-	$scope.edit = function(index) {
-		$scope.currentUpdateObj = angular.copy($scope.page.datas[index]);
-		$scope.currentUpdateObj.index = index;
-		$scope.currentUpdateObj.competitionEndTime = $filter('date')(
-				new Date($scope.currentUpdateObj.competitionEndTime),
-				'yyyy-MM-dd HH:mm:ss');
-		$scope.currentUpdateObj.competitionBeginTime = $filter('date')(
-				new Date($scope.currentUpdateObj.competitionBeginTime),
-				'yyyy-MM-dd HH:mm:ss');
-		if ($scope.currentUpdateObj.isCanDeclare) {
-			$scope.currentUpdateObj.competitionApplyEndTime = $filter('date')(
-					new Date($scope.currentUpdateObj.competitionApplyEndTime),
-					'yyyy-MM-dd HH:mm:ss');
-			$scope.currentUpdateObj.competitionApplyBeginTime = $filter('date')(
-					new Date($scope.currentUpdateObj.competitionApplyBeginTime),
-					'yyyy-MM-dd HH:mm:ss');
-		}
-		$("#updateDialog").modal("show");
-	};
-
-	$scope.editSubmit = function() {
-		// 用于封装提交的信息
-		var submitData = angular.copy($scope.currentUpdateObj);
-		submitData.competitionBeginTime = $("#currentUpdateObjCompetitionBeginTime")
-				.val();
-		submitData.competitionEndTime = $("#currentUpdateObjCompetitionEndTime")
-				.val();
-		if ($scope.currentUpdateObj.isCanDeclare) {
-			submitData.competitionApplyBeginTime = $("#currentUpdateObjCompetitionApplyBeginTime")
-					.val();
-			submitData.competitionApplyEndTime = $("#currentUpdateObjCompetitionApplyEndTime")
-					.val();
-		}
-		$http({
-					method : "post",
-					data : jQuery.param(submitData),
-					url : "../AdminCompetitionController/update",
-					headers : {
-						"Content-Type" : "application/x-www-form-urlencoded"
-					}
-				}).success(function(data, status, headers, config) {
-					if (data.success) {
-						alert("更新成功");
-						// 更新界面的内容
-						var index = submitData.index;
-						$scope.page.datas[index] = submitData;
-						$("#updateDialog").modal("hide");
-					}
-				}).error(function(response, status, headers, config) {
-					$scope.error = {};
-					$scope.error = response;
-				});
-	};
-
-	$scope.report = function(index) {
-		$scope.currentReportObj = $scope.page.datas[index];
-
-		$("#reportDialog").modal("show");
-	}
-
-	$scope.createReport = function() {
-		$http.post("../AdminCompetitionController/createReport?id="
-				+ $scope.currentReportObj.competitionId).success(
-				function(response) {
-					alert("发送请求成功");
-					$("#reportDialog").modal("hide");
-				});
-	}
-
-	$scope.downloadReport = function() {
-		window
-				.open("../AdminCompetitionController/downloadReport?competitionId="
-						+ $scope.currentReportObj.competitionId);
-	}
-
-	$scope.judgeSubmit = function(isRunNow) {
-		$http.post("../AdminCompetitionController/judge?id="
-				+ $scope.currentJudgeObj.competitionId + "&isRunNow="
-				+ isRunNow).success(function(response) {
-					alert("发送请求成功");
-					$("#judgeDialog").modal("hide");
-				});
-	}
-
-	$scope.judge = function(index) {
-		$scope.currentJudgeObj = $scope.page.datas[index];
-
-		$("#judgeDialog").modal("show");
-	}
-
-	$scope.closeSubmit = function(isRunNow) {
-		$http.post("../AdminCompetitionController/close?id="
-				+ $scope.currentCloseObj.competitionId + "&isRunNow="
-				+ isRunNow).success(function(response) {
-					alert("发送请求成功");
-					$("#closeDialog").modal("hide");
-				});
-	}
-
-	$scope.close = function(index) {
-		$scope.currentCloseObj = $scope.page.datas[index];
-
-		$("#closeDialog").modal("show");
-	}
-});// managerCompetitionCtr
-
-managerAppCtrls.controller('managerCompetitionApplicationCtr', function($scope,
-		$http) {
-	$scope.selectedId = -1;
-	$scope.loadCompetition = function() {
-		$http
-				.get("../AdminCompetitionApplicationController/getAllCompetitionIds")
-				.success(function(response) {
-							$scope.allCompetitionIds = response.allCompetitionIds;
-						});
-	}
-	$scope.loadCompetition();
-
-	$scope.getAllApplication = function() {
-		var selectedCompetitionId = $("#selectedCompetitionId").val();
-
-		if (selectedCompetitionId == null) {
-			alert("请先选择具体的比赛编号");
-			return;
-		}
-
-		$http
-				.get("../AdminCompetitionApplicationController/getAllApplication?competitionId="
-						+ selectedCompetitionId).success(function(response) {
-							$scope.allApplications = response.allApplications;
-						});
-	}
-
-	$scope.detail = function(index) {
-		$scope.currentDetailObj = $scope.allApplications[index];
-
-		$("#detailDialog").modal("show");
-	};
-
-	$scope.sendEmail = function(index) {
-		$scope.currentSendObj = $scope.allApplications[index];
-		$scope.currentSendObj.index = index;
-		$("#sendEmailDialog").modal("show");
-	}
-
-	$scope.sendEmailSubmit = function() {
-		var submitData = angular.copy($scope.currentSendObj);
-		$http({
-			method : "post",
-			data : jQuery.param(submitData),
-			url : "../AdminCompetitionApplicationController/sendApplicationEmail",
-			headers : {
-				"Content-Type" : "application/x-www-form-urlencoded"
-			}
-		}).success(function(response) {
-			if (response.success) {
-				alert("发送成功");
-				$scope.allApplications[submitData.index].isHaveSendEmail = true;
-				$("#sendEmailDialog").modal("hide");
-			}
-		}).error(function(response) {
-					alert("发送失败");
-					$scope.error = {};
-					$scope.error = response;
-				});
-	}
-
-	$scope.dispatchAccount = function(index) {
-		var application = {};
-		application.competitionId = $scope.allApplications[index].competitionId;
-		application.applicationId = $scope.allApplications[index].competitionApplicationId;
-		$http({
-					method : "post",
-					data : jQuery.param(application),
-					url : "../AdminCompetitionApplicationController/dispatchAccount",
-					headers : {
-						"Content-Type" : "application/x-www-form-urlencoded"
-					}
-				}).success(function(response) {
-			if (response.success) {
-				alert("分配成功");
-				$scope.allApplications[index].competitionAccountId = response.dispatchAccountId;
-			}
-		}).error(function(response) {
-					alert("分配失败");
-					$scope.error = {};
-					$scope.error = response;
-				});
-	}
-
-	$scope.cancelDispatchAccount = function(index) {
-		var application = {};
-		application.accountId = $scope.allApplications[index].competitionAccountId;
-		application.applicationId = $scope.allApplications[index].competitionApplicationId;
-		$http({
-			method : "post",
-			data : jQuery.param(application),
-			url : "../AdminCompetitionApplicationController/cancelDispatchAccount",
-			headers : {
-				"Content-Type" : "application/x-www-form-urlencoded"
-			}
-		}).success(function(response) {
-					if (response.success) {
-						alert("取消分配成功");
-						$scope.allApplications[index].competitionAccountId = -1;
-					}
-				}).error(function(response) {
-					alert("取消分配失败");
-					$scope.error = {};
-					$scope.error = response;
-				});
-	}
-});// managerCompetitionApplicationCtr
 
 managerAppCtrls.filter("problemTypeFilter", function() {
 			return function(problemTypeId, problemTypes) {

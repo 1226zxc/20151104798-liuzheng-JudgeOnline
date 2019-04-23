@@ -29,7 +29,8 @@ public class AdminUserService extends PageService<User, User> {
     }
 
     /**
-     * 统计用户信息，比如统计一共做了多少道题目，一共解决了多少道题目，一共解决的题目价值是多少,统计从执行该方法的时间开始，25小时以内有提交过代码的用户
+     * 统计用户信息，比如统计一共做了多少道题目，一共解决了多少道题目，
+     * 一共解决的题目价值是多少,统计从执行该方法的时间开始，25小时以内有提交过代码的用户
      */
     public void countUserData() {
         Calendar calendar = Calendar.getInstance();

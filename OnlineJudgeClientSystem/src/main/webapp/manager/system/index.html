@@ -16,8 +16,6 @@
 }
 </style>
 <div class="common-content" ng-controller="managerSystemCtr">
-
-
 	<div class="gap alert alert-warning alert-dismissable">等待判题的题目数量(每秒刷新):{{pendingHandleProblemCount.pendingHandleProblemCount}}</div>
 	<div class="panel panel-primary gap">
 		<div class="panel-heading">服务器基本信息(5秒刷新一次)</div>
@@ -37,10 +35,8 @@
 						<td>{{operationSystemInfo.operatingSystemName}}</td>
 						<td>{{operationSystemInfo.systemCpuCount}}</td>
 						<td>{{operationSystemInfo.systemCpuLoad| number :4}}</td>
-						<td>{{operationSystemInfo.totalPhysicalMemory/1024/1024|
-							number :2}}MB</td>
-						<td>{{operationSystemInfo.freePhysicalMemory/1024/1024|
-							number :2}}MB</td>
+						<td>{{operationSystemInfo.totalPhysicalMemory/1024/1024| number :2}}MB</td>
+						<td>{{operationSystemInfo.freePhysicalMemory/1024/1024| number :2}}MB</td>
 					</tr>
 				</tbody>
 			</table>

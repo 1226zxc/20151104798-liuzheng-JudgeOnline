@@ -1,101 +1,38 @@
 package com.lz.web.service;
 
-import java.io.File;
-import java.io.IOException;
-
+import com.lz.constant.ConstantParameter;
 import com.lz.util.Log4JUtil;
-import com.lz.web.component.AutowireInjector;
-import com.lz.web.job.CloseCompetitionJob;
+import com.lz.web.service.admin.AdminUserService;
+import com.lz.web.service.front.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import com.lz.constant.ConstantParameter;
-import com.lz.web.service.admin.AdminUserService;
-import com.lz.web.service.front.UserService;
-import com.lz.web.util.SerializingUtil;
+import java.io.File;
+import java.io.IOException;
 
+/**
+ * 定时调度方法
+ * @author 刘铮
+ */
 @Service
 public class ScheduledService {
-
-	@Autowired
-	private JobService jobService;
-	@Autowired
-	private AutowireInjector autowireInjector;
 	@Autowired
 	private UserService userService;
 	@Autowired
 	private AdminUserService adminUserService;
 
-	// 每天从凌晨4点开始执行，一直执行到凌晨的6点
-	@Scheduled(cron = "0 0 4-6 * * ?")
-	public void doCloseCompetitionJob() {
-		// 获取所有的任务
-		File jobDir = new File(
-				ConstantParameter.CLOSE_COMPETITION_JOB_ROOT_PATH);
-		if (!jobDir.exists()) {
-			Log4JUtil.logError(new RuntimeException("保存关闭比赛的深夜任务的文件夹不见了"));
-			return;
-		}
-
-		File[] jobFiles = jobDir.listFiles();
-		if (jobFiles.length < 1) {
-			return;
-		}
-
-		for (File jobFile : jobFiles) {
-			try {
-				Runnable job = SerializingUtil.readBeanFromFile(jobFile,
-						CloseCompetitionJob.class);
-				// 先为其装配必要的组件
-				autowireInjector.autowire(job);
-				jobService.executeNow(job);
-			} catch (Exception e) {
-				e.printStackTrace();
-				Log4JUtil.logError(e);
-			}
-			jobFile.delete();
-		}
-	}
-
-	// 每天从凌晨1点开始执行，一直执行到凌晨的4点
-	@Scheduled(cron = "0 0 1-4 * * ?")
-	public void doJudgeCompetitionJob() {
-		// 获取所有的任务
-		File jobDir = new File(
-				ConstantParameter.JUDGE_COMPETITION_JOB_ROOT_PATH);
-		if (!jobDir.exists()) {
-			Log4JUtil.logError(new RuntimeException("保存比赛判题的深夜任务的文件夹不见了"));
-			return;
-		}
-
-		File[] jobFiles = jobDir.listFiles();
-		if (jobFiles.length < 1) {
-			return;
-		}
-
-		for (File jobFile : jobFiles) {
-			try {
-				Runnable job = SerializingUtil.readBeanFromFile(jobFile,
-						CloseCompetitionJob.class);
-				// 先为其装配必要的组件
-				autowireInjector.autowire(job);
-				jobService.executeNow(job);
-			} catch (Exception e) {
-				e.printStackTrace();
-				Log4JUtil.logError(e);
-			}
-			jobFile.delete();
-		}
-	}
-
-	// 每天凌晨6点执行
+	/**
+	 * 每天凌晨6点执行
+	 */
 	@Scheduled(cron = "0 0 6 * * ? ")
 	public void updateUserLeaderboardCache() {
 		userService.updateUserLeaderboardCache();
 	}
 
-	// 每天凌晨一点执行
+	/**
+	 * 每天凌晨一点执行
+	 */
 	@Scheduled(cron = "0 0 1 * * ? ")
 	public void countUserData() {
 		adminUserService.countUserData();
@@ -117,7 +54,9 @@ public class ScheduledService {
 		}
 
 		File[] listFiles = dir.listFiles();
-
+		if (listFiles == null || listFiles.length < 1) {
+			return;
+		}
 		for (File file : listFiles) {
 			try {
 				file.delete();
